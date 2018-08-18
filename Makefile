@@ -1,9 +1,9 @@
 SCRATCH_DIR = scratch
 
-scratchdir:
+scratch:
 	mkdir -p $(SCRATCH_DIR)
 
-scratch/co2e.zip: scratchdir
+scratch/co2e.zip: scratch
 	curl -o '$(SCRATCH_DIR)/co2e.zip' 'http://api.worldbank.org/v2/en/indicator/EN.ATM.CO2E.KT?downloadformat=csv'
 
 scratch/API_EN.ATM.CO2E.KT_DS2_en_csv_v2_10051706.csv: scratch/co2e.zip
