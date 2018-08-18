@@ -19,11 +19,13 @@ def find_latest_emissions_year(data):
   years.reverse()
 
   for year in years:
-    col = data.get_col(data.headers.index(str(year)))
-    float_col = [float(amount) if amount else 0 for amount in col]
-    total = sum(float_col)
-    if total > 0:
+    if total_emissions(data, year) > 0:
       return year
+
+def total_emissions(data, year):
+  column = data.get_col(data.headers.index(str(year)))
+  float_col = [float(amount) if amount else 0 for amount in column]
+  return sum(float_col)
 
 if __name__ == '__main__':
   if sys.argv[-1].endswith('csv'):
@@ -32,5 +34,6 @@ if __name__ == '__main__':
     
     print extract_emissions(dataset)
     # print find_latest_emissions_year(dataset)
+    # print total_emissions(dataset, 2014)
   else:
     print 'call with a csv file as the only argument'
