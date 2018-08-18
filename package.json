@@ -1,0 +1,7 @@
+{
+  "name": "scc",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Marcos Ojeda <marcos@generic.cx>",
+  "license": "MIT"
+}
