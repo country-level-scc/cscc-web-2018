@@ -5,5 +5,5 @@
   "author": "Marcos Ojeda <marcos@generic.cx>",
   "license": "MIT",
   "private": true,
-  "workspaces": ["utils/**", "utils/@nsfmc/babel-preset-sketching", "bubbles"]
+  "workspaces": ["utils/*", "utils/babel-preset-sketching", "bubbles"]
 }

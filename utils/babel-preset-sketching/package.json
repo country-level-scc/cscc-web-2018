@@ -1,0 +1,19 @@
+{
+  "name": "@nsfmc/babel-preset-sketching",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@babel/cli": "^7.0.0-rc",
+    "@babel/core": "^7.0.0-rc",
+    "@babel/plugin-proposal-class-properties": "^7.0.0-rc",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0-rc",
+    "@babel/plugin-proposal-numeric-separator": "^7.0.0-rc",
+    "@babel/plugin-transform-classes": "^7.0.0-rc",
+    "@babel/plugin-transform-destructuring": "^7.0.0-rc",
+    "@babel/plugin-transform-react-constant-elements": "^7.0.0-rc",
+    "@babel/preset-env": "^7.0.0-rc",
+    "@babel/preset-flow": "^7.0.0-rc",
+    "@babel/preset-react": "^7.0.0-rc"
+  }
+}
