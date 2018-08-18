@@ -3,5 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "author": "Marcos Ojeda <marcos@generic.cx>",
-  "license": "MIT"
+  "license": "MIT",
+  "private": true,
+  "workspaces": ["utils/**", "utils/@nsfmc/babel-preset-sketching", "bubbles"]
 }

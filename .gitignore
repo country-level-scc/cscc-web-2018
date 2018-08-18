@@ -1,3 +1,4 @@
 env
 .vscode
 scratch
+node_modules
