@@ -26,3 +26,40 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+.tickLabel {
+  font-size: 5px;
+}
+.scc line {
+  transition: all 160ms ease;
+  height: 1px;
+}
+.scc .djo {
+  stroke-dasharray: 2;
+}
+.rcp85, .rcp45, .rcp60 {
+  opacity: 0.3;
+}
+.SSP1 {
+  stroke: rgb(230, 50, 19);
+}
+.SSP2 {
+  stroke: rgb(0, 127, 185);
+}
+.SSP3 {
+  stroke: rgb(13, 163, 71);
+}
+.SSP4 {
+  stroke: rgb(132, 11, 189);
+}
+.SSP5 {
+  stroke: rgb(204, 100, 4);
+}
+
+.SSP1.rcp60,
+.SSP2.rcp60,
+.SSP4.rcp60,
+.SSP3.rcp85,
+.SSP5.rcp85
+ {opacity: 1;}
+
