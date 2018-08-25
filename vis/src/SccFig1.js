@@ -17,18 +17,37 @@ const dataForParams = (data, ssp, rcp) =>
     );
 
 const Scales = ({ min, max, scaler, slices = 5 }) => {
-  const sliceWidth = Math.floor(max - min / slices);
+  const sliceWidth = Math.floor((max - min) / slices);
   const ticks = _range(Math.floor(min), Math.ceil(max), sliceWidth);
   return (
     <g>
       <line y1={290} y2={290} stroke="#aaa" x1={0} x2={400} />
-      {ticks.map(t => (
-        <React.Fragment key={t}>
-          <line x1={scaler(t)} x2={scaler(t)} y1={287} y2={290} stroke="#aaa" />
-          <text className="tickLabel" x={scaler(t)} y={295} textAnchor="middle">
-            {t}
-          </text>
-        </React.Fragment>
+      {ticks.map((t, idx) => (
+        <Motion
+          key={idx}
+          defaultStyle={{ x: 0 }}
+          style={{ x: spring(scaler(t)) }}
+        >
+          {values => (
+            <React.Fragment>
+              <line
+                x1={values.x}
+                x2={values.x}
+                y1={287}
+                y2={290}
+                stroke="#aaa"
+              />
+              <text
+                className="tickLabel"
+                x={values.x}
+                y={295}
+                textAnchor="middle"
+              >
+                {t}
+              </text>
+            </React.Fragment>
+          )}
+        </Motion>
       ))}
     </g>
   );
@@ -68,13 +87,16 @@ const SCCFigure = ({ country, data, clamp }) => {
     .range([10, 390]);
 
   return (
-    <svg viewBox="0 0 400 300" width="400" height="300">
+    <svg viewBox="0 0 400 320" width="400" height="320">
       {["SSP1", "SSP2", "SSP3", "SSP4", "SSP5"].map((ssp, i) => (
         <g key={ssp} transform={`translate(0,${i * 60})`}>
           <DamageGroup ssp={ssp} data={data} scaler={scaler} />
         </g>
       ))}
       <Scales min={min} max={maxActual} scaler={scaler} />
+      <text className="fig1-attr" x={400} y={310} textAnchor="end">
+        Ricke et al. Country-level social cost of carbon. (2018).
+      </text>
     </svg>
   );
 };
@@ -120,20 +142,31 @@ class DamageFigure extends React.Component<Props> {
       const x1 = scaler(row.estimates[0]);
       const x2 = scaler(row.estimates[2]);
 
+      const median = scaler(row.estimates[1]);
+
       return (
         <React.Fragment key={fn}>
           <Motion
-            defaultStyle={{ x1: 0, x2: 0 }}
-            style={{ x1: spring(x1), x2: spring(x2) }}
+            defaultStyle={{ x1: 0, x2: 0, median: 0 }}
+            style={{ x1: spring(x1), x2: spring(x2), median: spring(median) }}
           >
             {value => (
-              <line
-                className={fn}
-                x1={value.x1}
-                x2={value.x2}
-                y1={idx * 2}
-                y2={idx * 2}
-              />
+              <React.Fragment>
+                <line
+                  className={fn}
+                  x1={value.x1}
+                  x2={value.x2}
+                  y1={idx * 2}
+                  y2={idx * 2}
+                />
+
+                <circle
+                  cx={value.median || 0}
+                  cy={idx * 2}
+                  r={1}
+                  className={fn}
+                />
+              </React.Fragment>
             )}
           </Motion>
         </React.Fragment>
