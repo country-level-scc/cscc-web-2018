@@ -4,10 +4,6 @@ import React, { Component } from "react";
 import SCCFigure from "./SccFig1";
 import Papa from "papaparse";
 
-// import wldData from "./wld_data";
-// import usData from "./usa_data";
-// import rusData from "./rus_data";
-
 import "./App.css";
 
 const fig1Filter = country => row => row.eta === '1p5' && row.prtp === '2' && row.ISO3 === country;
@@ -21,7 +17,6 @@ const fetchCountryFig1 = (countryName, filterFn) => {
     dynamicTyping: (name) => ['16.7%', '50%', '83.3%'].includes(name),
     step: (results, parser) => {
       const row = results.data[0];
-      // console.log(row)
       if (test(row)) {
         data.push(row)
       }

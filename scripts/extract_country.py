@@ -5,6 +5,10 @@ import tablib
 
 
 def extract_country(data, iso_code, prtp='2', eta='1p5'):
+  """extract country data with prtp and etas specified
+  
+  may not be necessary if you can stream the csv directly
+  """
   extracted = tablib.Dataset()
   headers = data.headers
   idx = lambda key: headers.index(key)
@@ -25,11 +29,6 @@ if __name__ == '__main__':
   if args.csv.endswith('csv'):
     dataset = tablib.Dataset().load(open(args.csv).read())
     extract_country(dataset, args.iso3)
-    # target = sys.argv[-1]
-    # dataset = tablib.Dataset().load(open(target).read())
-    
-    # print extract_emissions(dataset)
-    # print find_latest_emissions_year(dataset)
-    # print total_emissions(dataset, 2014)
+
   else:
-    print 'call with a csv file as the only argument'
+    print 'call\n  python extract_country.py USA cscc_v1.csv'
