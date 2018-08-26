@@ -15,3 +15,12 @@ sourcedata/co2e-with-headers.csv: scratch/API_EN.ATM.CO2E.KT_DS2_en_csv_v2_10051
 
 sourcedata/co2e-latest.csv: sourcedata/co2e-with-headers.csv
 	python scripts/clean-emissions.py $(SCRATCH_DIR)/co2e-with-headers.csv > sourcedata/co2e-latest.csv
+
+
+# shapefiles for map
+scratch/ne_110m_admin_0_countries.zip: scratch
+	curl -L -o $(SCRATCH_DIR)/ne_110m_admin_0_countries.zip https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip
+
+scratch/ne_110m_admin_0_countries.shp: scratch/ne_110m_admin_0_countries.zip
+	unzip -d $(SCRATCH_DIR) -u '$(SCRATCH_DIR)/ne_110m_admin_0_countries.zip'
+	touch '$(SCRATCH_DIR)/ne_110m_admin_0_countries.shp'
