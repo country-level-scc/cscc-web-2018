@@ -25,10 +25,11 @@ type Props = {
 class Figure2 extends React.Component<Props> {
   render() {
     const { data } = this.props;
+
     return (
       <svg width={800} height={350} viewBox="150 0 800 350">
-        <g transform={`translate(675, 75)`}>>
-          <Fig2Legend bins={fig2Bins} labels={{ 0: "<-10", 7: ">100" }} />
+        <g transform={`translate(675, 75)`}>
+          ><Fig2Legend bins={fig2Bins} labels={{ 0: "<-10", 7: ">100" }} />
         </g>
         <g className="countries">
           {worldMap.map(country => {
@@ -123,7 +124,6 @@ class CSVFig2Loader extends React.PureComponent<CSVFig2Props, CSVFig2State> {
       prevProps.rcp !== this.props.rcp ||
       prevProps.dmg !== this.props.dmg
     ) {
-      console.log(this.props);
       this.fetchData();
     }
   }
@@ -162,30 +162,26 @@ const binner = (val, invert = false, bins = fig2Bins) => {
 
 const Fig2Legend = ({ bins, labels, size = 15, x, y }) => {
   const height = (size + 1) * bins.length;
-  return (
-      bins.map((bin, idx) => {
-        return (
-          <React.Fragment key={bin[0]}>
-            <rect
-              fill={colorFor({ "50%": (bin[0] + bin[1]) / 2 })}
-              width={size}
-              height={size}
-              x={0}
-              y={idx * (size + 1)}
-            />
-            <text
-              className="f2-legend-label"
-              x={size + 2}
-              y={idx * (size + 1) + 10}
-            >
-              {labels[idx] !== undefined
-                ? labels[idx]
-                : `${bin[0]} – ${bin[1]}`}
-            </text>
-          </React.Fragment>
-        );
-      })
-  );
+  return bins.map((bin, idx) => {
+    return (
+      <React.Fragment key={bin[0]}>
+        <rect
+          fill={colorFor({ "50%": (bin[0] + bin[1]) / 2 })}
+          width={size}
+          height={size}
+          x={0}
+          y={idx * (size + 1)}
+        />
+        <text
+          className="f2-legend-label"
+          x={size + 2}
+          y={idx * (size + 1) + 10}
+        >
+          {labels[idx] !== undefined ? labels[idx] : `${bin[0]} – ${bin[1]}`}
+        </text>
+      </React.Fragment>
+    );
+  });
 };
 
 type ParamProps = {};
