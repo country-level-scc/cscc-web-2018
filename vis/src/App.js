@@ -30,11 +30,15 @@ const fetchCountryFig1 = (countryName, filterFn) => {
 */
 class App extends Component {
 
+  state={
+    selectedCountry: 'WLD',
+  }
+
   render() {
     return (
       <div className="App">
-        <Fig2Options />
-        <Fig1Options />
+        <Fig2Options onCountrySelect={selectedCountry => this.setState({selectedCountry})} />
+        <Fig1Options country={this.state.selectedCountry} onCountryChange={selectedCountry => this.setState({selectedCountry})} />
       </div>
     );
   }

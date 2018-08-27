@@ -50,6 +50,8 @@ class Figure2 extends React.Component<Props> {
                   this.props.onCountryEnter &&
                   this.props.onCountryEnter(label, countryRow)
                 }
+                style={{cursor: 'pointer'}}
+                onClick={() => this.props.onCountryClick(id)}
               />
             );
           })}
@@ -184,7 +186,9 @@ const Fig2Legend = ({ bins, labels, size = 15, x, y }) => {
   });
 };
 
-type ParamProps = {};
+type ParamProps = {
+  onCountrySelect: (iso3: string) => any,
+};
 type ParamState = {
   ssp: "SSP1" | "SSP2" | "SSP3" | "SSP4" | "SSP5",
   rcp: "rcp45" | "rcp60" | "rcp85",
@@ -247,7 +251,7 @@ export class Fig2Options extends React.Component<ParamProps, ParamState> {
         >
           {({ data, loading }) => (
             <div className={loading ? "loading-map" : undefined}>
-              <Figure2 data={data} onCountryEnter={this.hoverCountry} />
+              <Figure2 data={data} onCountryEnter={this.hoverCountry} onCountryClick={this.props.onCountrySelect} />
             </div>
           )}
         </CSVFig2Loader>
@@ -257,7 +261,7 @@ export class Fig2Options extends React.Component<ParamProps, ParamState> {
           style={{ borderTop: `3px solid ${colorFor(hoveredData)}` }}
         >
           <p className="f2-countryname">
-            <strong>{this.state.hoveredName}</strong>
+            <strong>{this.state.hoveredName} {hoveredData && hoveredData.ISO3 && <button onClick={() => this.props.onCountrySelect(hoveredData.ISO3)}>👇</button>}</strong>
           </p>
           {hoveredData ? (
             <React.Fragment>

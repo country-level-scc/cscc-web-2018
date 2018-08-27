@@ -268,25 +268,23 @@ class CSVFig1Loader extends React.PureComponent<CSVFig1Props, CSVFig1State> {
   }
 }
 
-type F1Props = {};
+type F1Props = {
+  country: string,
+  onCountryChange: (country: string) => any,
+};
 type F1State = {
-  data: Array<CSVRow>,
-  country: string
 };
 export class Fig1Options extends React.Component<F1Props, F1State> {
-  state = {
-    data: [],
-    country: "WLD"
-  };
 
   render() {
-    const { country } = this.state;
+    const { country } = this.props;
     return (
       <div>
         <select
           name="country"
+          value={this.props.country}
           onChange={evt =>
-            this.setState({ [evt.currentTarget.name]: evt.currentTarget.value })
+            this.props.onCountryChange(evt.target.value)
           }
         >
           {countries.map(({ id, label }, idx) => (
@@ -295,6 +293,7 @@ export class Fig1Options extends React.Component<F1Props, F1State> {
             </option>
           ))}
         </select>
+        <button onClick={() => this.props.onCountryChange('WLD')}>reset to world</button>
         <CSVFig1Loader country={country}>
           {({ data, loading }) => <SCCFigure data={data} country={country} />}
         </CSVFig1Loader>
@@ -304,6 +303,7 @@ export class Fig1Options extends React.Component<F1Props, F1State> {
 }
 
 const countries = [
+  { id: "WLD", label: "World" },
   { id: "AFG", label: "Afghanistan" },
   { id: "ALB", label: "Albania" },
   { id: "DZA", label: "Algeria" },
