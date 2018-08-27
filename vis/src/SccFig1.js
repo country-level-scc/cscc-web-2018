@@ -3,25 +3,25 @@ import * as React from "react";
 import { scaleLinear } from "d3-scale";
 import _range from "lodash/range";
 import { Motion, spring } from "react-motion";
-import Papa from 'papaparse';
+import Papa from "papaparse";
 
 type SSP = "SSP1" | "SSP2" | "SSP3" | "SSP4" | "SSP5";
 type RCP = "rcp45" | "rcp60" | "rcp85";
-type DMG =  "bhm_sr" | "bhm_richpoor_sr" | "bhm_lr" | "bhm_richpoor_lr" | "djo";
+type DMG = "bhm_sr" | "bhm_richpoor_sr" | "bhm_lr" | "bhm_richpoor_lr" | "djo";
 type CSVRow = {|
-  run: string,
-  dmgfuncpar: DMG,
-  climate: 'expected' | 'uncertain',
+  run: DMG,
+  dmgfuncpar: string,
+  climate: "expected" | "uncertain",
   SSP: SSP,
   RCP: RCP,
   N: *,
   ISO3: string,
-  prtp: '1p5',
-  eta: '2',
-  dr: 'NA' | '3',
-  '16.7%': number,
-  '50%': number,
-  '83.3%': number,
+  prtp: "1p5",
+  eta: "2",
+  dr: "NA" | "3",
+  "16.7%": number,
+  "50%": number,
+  "83.3%": number
 |};
 
 const dataForParams = (data: Array<CSVRow>, ssp: SSP, rcp: RCP) =>
@@ -31,7 +31,7 @@ const dataForParams = (data: Array<CSVRow>, ssp: SSP, rcp: RCP) =>
     .reduce(
       (prev, curr) => ({
         ...prev,
-        [curr["run"]]: curr
+        [curr.run]: curr
       }),
       {}
     );
@@ -73,10 +73,11 @@ const Scales = ({ min, max, scaler, slices = 5 }) => {
   );
 };
 
-const minMax = data => {
-  let min, max;
+const minMax = (data: Array<CSVRow>): { max: number, min: number } => {
+  let min = 0,
+    max = 0;
   data.forEach(row => {
-    const d = [row['16.7%'], row['83.3%']];
+    const d = [row["16.7%"], row["83.3%"]];
     min = min ? Math.min(min, ...d) : Math.min(...d);
     max = max ? Math.max(max, ...d) : Math.max(...d);
   });
@@ -84,12 +85,13 @@ const minMax = data => {
 };
 
 const inferredClamp = (data: Array<CSVRow>) => {
+  console.log(data);
   const slice = data
     .filter(row => row.RCP === "rcp60")
     .filter(row => row.SSP === "SSP2")
     .filter(row => row.run === "bhm_sr");
   if (slice.length === 1) {
-    return (slice[0]['83.3%'] - slice[0]['16.7%']) * 20;
+    return (slice[0]["83.3%"] - slice[0]["16.7%"]) * 20;
   } else {
     // return 10k as default if this fails (which should error out)
     console.log(`unable to find a max bounds for ${data[0] && data[0].ISO3}`);
@@ -104,7 +106,7 @@ const SCCFigure = ({
 }: {
   country: string,
   data: *,
-  clamp: number
+  clamp?: number
 }) => {
   const { min, max } = minMax(data);
   const inferred = inferredClamp(data);
@@ -116,7 +118,7 @@ const SCCFigure = ({
     .range([10, 390]);
 
   return (
-    <svg viewBox="0 0 400 320" width="400" height="320">
+    <svg viewBox="0 0 400 320" width="800" height="640">
       {["SSP1", "SSP2", "SSP3", "SSP4", "SSP5"].map((ssp, i) => (
         <g key={ssp} transform={`translate(0,${i * 60})`}>
           <DamageGroup ssp={ssp} data={data} scaler={scaler} />
@@ -136,7 +138,7 @@ const DamageGroup = ({ ssp, data, scaler }) => {
     <g
       key={rcp}
       transform={`translate(0,${j * 15})`}
-      onMouseEnter={() => console.log({ rcp, ssp })}
+      // onMouseEnter={() => console.log({ rcp, ssp })}
       className={[rcp, ssp, "scc"].join(" ")}
     >
       <DamageFigure
@@ -152,7 +154,8 @@ const DamageGroup = ({ ssp, data, scaler }) => {
 type Props = {
   rcp: string,
   ssp: string,
-  data: CSVRow,
+  data: { [key: DMG]: CSVRow },
+  scaler: (x: number) => number
 };
 class DamageFigure extends React.Component<Props> {
   render() {
@@ -166,12 +169,12 @@ class DamageFigure extends React.Component<Props> {
     ];
 
     return damage_functions.map((fn, idx) => {
-      const row = data[fn];
+      const row = data[fn] || { "16.7%": 0, "83.3%": 0, "50%": 0 };
 
-      const x1 = scaler(row['16.7%']);
-      const x2 = scaler(row['83.3%']);
+      const x1 = scaler(row["16.7%"]);
+      const x2 = scaler(row["83.3%"]);
 
-      const median = scaler(row['50%']);
+      const median = scaler(row["50%"]);
 
       return (
         <React.Fragment key={fn}>
@@ -189,12 +192,14 @@ class DamageFigure extends React.Component<Props> {
                   y2={idx * 2}
                 />
 
-                <circle
-                  cx={value.median || 0}
-                  cy={idx * 2}
-                  r={1}
-                  className={fn}
-                />
+                {x1 - x2 !== 0 && (
+                  <circle
+                    cx={value.median || 0}
+                    cy={idx * 2}
+                    r={1}
+                    className={fn}
+                  />
+                )}
               </React.Fragment>
             )}
           </Motion>
@@ -226,9 +231,9 @@ class CSVFig1Loader extends React.PureComponent<CSVFig1Props, CSVFig1State> {
 
   fetchData = () => {
     const data = [];
-    const { ssp, rcp, dmg, prtp, eta, dmgfuncpar, climate } = this.props;
+    const { country } = this.props;
     const test = row =>
-      row.ISO3 === this.props.country && row.eta === "1p5" && row.prtp === "2";
+      row.ISO3 === country && row.eta === "1p5" && row.prtp === "2";
     this.setState({ loading: true });
     Papa.parse(this.props.csvPath, {
       download: true,
@@ -239,11 +244,9 @@ class CSVFig1Loader extends React.PureComponent<CSVFig1Props, CSVFig1State> {
         // console.log(row.ISO3, this.props.country)
         if (test(row)) {
           data.push(row);
-          console.log('huh')
         }
       },
       complete: () => {
-        console.log({data})
         this.setState({ data, loading: false });
       }
     });
@@ -266,19 +269,47 @@ class CSVFig1Loader extends React.PureComponent<CSVFig1Props, CSVFig1State> {
   }
 }
 
-export class Fig1Options extends React.Component<>{
-  state={
+type F1Props = {};
+type F1State = {
+  data: Array<CSVRow>,
+  country: string
+};
+export class Fig1Options extends React.Component<F1Props, F1State> {
+  state = {
     data: [],
-    country: 'WLD',
+    country: "WLD"
   };
 
   render() {
-    const {country} = this.state;
-    return <div>
-      <CSVFig1Loader country={country}>
-        {({data, loading}) => {console.log(data); return <SCCFigure data={data} country={country} />}}
-        {/* <SCCFigure data={data} country={country} /> */}
-      </CSVFig1Loader>
-    </div>;
+    const { country } = this.state;
+    return (
+      <div>
+        <select
+          name="country"
+          onChange={evt =>
+            this.setState({ [evt.currentTarget.name]: evt.currentTarget.value })
+          }
+        >
+          {countries.map(({ id, label }, idx) => (
+            <option key={id} value={id}>
+              {label}
+            </option>
+          ))}
+        </select>
+        <CSVFig1Loader country={country}>
+          {({ data, loading }) => <SCCFigure data={data} country={country} />}
+        </CSVFig1Loader>
+      </div>
+    );
   }
 }
+
+const countries = [
+  { id: "WLD", label: "World" },
+  { id: "USA", label: "United States" },
+  { id: "RUS", label: "Russia" },
+  { id: "IND", label: "India" },
+  { id: "CHN", label: "China" },
+  { id: "BRA", label: "Brazil" },
+  { id: "CAN", label: "Canada" }
+];

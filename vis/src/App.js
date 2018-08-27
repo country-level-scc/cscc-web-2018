@@ -33,7 +33,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        {/* <Fig2Options /> */}
+        <Fig2Options />
         <Fig1Options />
       </div>
     );
