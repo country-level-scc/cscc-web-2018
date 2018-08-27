@@ -23,4 +23,24 @@ scratch/ne_110m_admin_0_countries.zip: scratch
 
 scratch/ne_110m_admin_0_countries.shp: scratch/ne_110m_admin_0_countries.zip
 	unzip -d $(SCRATCH_DIR) -u '$(SCRATCH_DIR)/ne_110m_admin_0_countries.zip'
-	touch '$(SCRATCH_DIR)/ne_110m_admin_0_countries.shp'
+	touch $@
+
+scratch/ne_110m_geo.json: scratch/ne_110m_admin_0_countries.shp
+	./vis/node_modules/.bin/shp2json scratch/ne_110m_admin_0_countries.shp -o $@
+
+scratch/ne_110m_geo.ndjson: scratch/ne_110m_geo.json
+	./vis/node_modules/.bin/ndjson-split 'd.features' < scratch/ne_110m_geo.json > $@
+
+scratch/ne_110m_min_geo.ndjson: scratch/ne_110m_geo.ndjson
+	./vis/node_modules/.bin/ndjson-map 'd.properties = {id: d.properties.ADM0_A3_US, label: d.properties.NAME}, d' < scratch/ne_110m_geo.ndjson | ./vis/node_modules/.bin/ndjson-filter '!["GRL", "ATA"].includes(d.properties.id)' > $@
+
+scratch/ne_110_min.json: scratch/ne_110m_min_geo.ndjson
+	./vis/node_modules/.bin/ndjson-reduce 'p.features.push(d), p' '{type: "FeatureCollection", features: []}' < scratch/ne_110m_min_geo.ndjson  > $@
+
+scratch/ne_110_topo_quant.json: scratch/ne_110m_min_geo.ndjson
+	./vis/node_modules/.bin/geo2topo -n countries=scratch/ne_110m_min_geo.ndjson > scratch/ne_110_topo.json
+	# ./vis/node_modules/.bin/toposimplify -p 1 < scratch/ne_110_topo.json > scratch/ne_110_topo_simple.json
+	./vis/node_modules/.bin/topoquantize 1e5 < scratch/ne_110_topo.json > $@
+
+vis/src/ne_110_topo_quant.json: scratch/ne_110_topo_quant.json
+	cp scratch/ne_110_topo_quant.json $@

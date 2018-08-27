@@ -68,15 +68,16 @@ const inferredClamp = data => {
     .filter(row => row.rcp === "rcp60")
     .filter(row => row.scenario === "SSP2")
     .filter(row => row.damage_fn === "bhm_sr");
-  console.log(slice);
   if (slice.length === 1) {
     return (slice[0].estimates[2] - slice[0].estimates[0]) * 20;
   } else {
-    return undefined;
+    // return 10k as default if this fails (which should error out)
+    console.error(`unable to find a max bounds for ${data[0].ISO3}`)
+    return 10000;
   }
 };
 
-const SCCFigure = ({ country, data, clamp }) => {
+const SCCFigure = ({ country, data, clamp }: {country: string, data: *, clamp: number }) => {
   const { min, max } = minMax(data);
   const inferred = inferredClamp(data);
   const maxActual = clamp !== undefined ? clamp : Math.min(inferred, max);

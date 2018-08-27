@@ -2,6 +2,8 @@
 import React, { Component } from "react";
 
 import SCCFigure from "./SccFig1";
+import SCCFig2 from './SccFig2';
+
 import Papa from "papaparse";
 
 import "./App.css";
@@ -65,6 +67,7 @@ class App extends Component {
             country={this.state.country}
           />
         )}
+        <SCCFig2 />
       </div>
     );
   }

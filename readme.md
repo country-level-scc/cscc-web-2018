@@ -1,5 +1,12 @@
 #scc data vis
 
+## web stuff
+
+install [yarn](http://yarnpkg.com/) and then in the `vis` folder run
+
+    yarn
+    yarn start
+
 
 ## python
 **virtualenv**
@@ -16,3 +23,4 @@ there's a makefile here which you can use to download the latest co2 emissions d
     make sourcedata/co2e-latest.csv
 
 it will write the file to `sourcedata/co2e-latest.csv`
+
