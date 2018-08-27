@@ -1,32 +1,6 @@
 .App {
-  text-align: center;
+  padding: 50px 0 100px 100px;
 }
-
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
-}
-
-.App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
-  color: white;
-}
-
-.App-title {
-  font-size: 1.5em;
-}
-
-.App-intro {
-  font-size: large;
-}
-
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
 .tickLabel {
   font-size: 5px;
 }
@@ -66,4 +40,38 @@
 .fig1-attr {
   font: 10px helvetica;
   font-style: italic;
+}
+
+@keyframes pulse {
+  0% { opacity: 1}
+  50% { opacity: 0.3}
+  100% { opacity: 1}
+}
+.loading-map {
+  animation: pulse 1s infinite ease-in-out;
+}
+
+.f2-country-detail {
+  text-align: left;
+  font: 22px helvetica;
+  width: 600px;
+}
+.f2-country-detail p {
+  margin: 0;
+}
+.f2-countryname.f2-countryname {
+  line-height: 1em;
+  margin: 4px 0;
+}
+.f2-clscc, .f2-nodata {
+  font-size: 12px;
+  width: 250px;
+  margin-right: 20px;
+}
+.f2-nodata {
+  font-style: italic;
+}
+.f2-legend-label {
+  font-size: 10px;
+  font-family: georgia;
 }
