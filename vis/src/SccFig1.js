@@ -1,17 +1,37 @@
 // @flow
-import React from "react";
+import * as React from "react";
 import { scaleLinear } from "d3-scale";
 import _range from "lodash/range";
 import { Motion, spring } from "react-motion";
+import Papa from 'papaparse';
 
-const dataForParams = (data, ssp, rcp) =>
+type SSP = "SSP1" | "SSP2" | "SSP3" | "SSP4" | "SSP5";
+type RCP = "rcp45" | "rcp60" | "rcp85";
+type DMG =  "bhm_sr" | "bhm_richpoor_sr" | "bhm_lr" | "bhm_richpoor_lr" | "djo";
+type CSVRow = {|
+  run: string,
+  dmgfuncpar: DMG,
+  climate: 'expected' | 'uncertain',
+  SSP: SSP,
+  RCP: RCP,
+  N: *,
+  ISO3: string,
+  prtp: '1p5',
+  eta: '2',
+  dr: 'NA' | '3',
+  '16.7%': number,
+  '50%': number,
+  '83.3%': number,
+|};
+
+const dataForParams = (data: Array<CSVRow>, ssp: SSP, rcp: RCP) =>
   data
-    .filter(row => row.scenario === ssp)
-    .filter(row => row.rcp === rcp)
+    .filter(row => row.SSP === ssp)
+    .filter(row => row.RCP === rcp)
     .reduce(
       (prev, curr) => ({
         ...prev,
-        [curr["damage_fn"]]: curr
+        [curr["run"]]: curr
       }),
       {}
     );
@@ -56,28 +76,36 @@ const Scales = ({ min, max, scaler, slices = 5 }) => {
 const minMax = data => {
   let min, max;
   data.forEach(row => {
-    const d = [row.estimates[0], row.estimates[2]];
+    const d = [row['16.7%'], row['83.3%']];
     min = min ? Math.min(min, ...d) : Math.min(...d);
     max = max ? Math.max(max, ...d) : Math.max(...d);
   });
   return { min, max };
 };
 
-const inferredClamp = data => {
+const inferredClamp = (data: Array<CSVRow>) => {
   const slice = data
-    .filter(row => row.rcp === "rcp60")
-    .filter(row => row.scenario === "SSP2")
-    .filter(row => row.damage_fn === "bhm_sr");
+    .filter(row => row.RCP === "rcp60")
+    .filter(row => row.SSP === "SSP2")
+    .filter(row => row.run === "bhm_sr");
   if (slice.length === 1) {
-    return (slice[0].estimates[2] - slice[0].estimates[0]) * 20;
+    return (slice[0]['83.3%'] - slice[0]['16.7%']) * 20;
   } else {
     // return 10k as default if this fails (which should error out)
-    console.error(`unable to find a max bounds for ${data[0].ISO3}`)
+    console.log(`unable to find a max bounds for ${data[0] && data[0].ISO3}`);
     return 10000;
   }
 };
 
-const SCCFigure = ({ country, data, clamp }: {country: string, data: *, clamp: number }) => {
+const SCCFigure = ({
+  country,
+  data,
+  clamp
+}: {
+  country: string,
+  data: *,
+  clamp: number
+}) => {
   const { min, max } = minMax(data);
   const inferred = inferredClamp(data);
   const maxActual = clamp !== undefined ? clamp : Math.min(inferred, max);
@@ -124,7 +152,7 @@ const DamageGroup = ({ ssp, data, scaler }) => {
 type Props = {
   rcp: string,
   ssp: string,
-  data: { [key: string]: {} }
+  data: CSVRow,
 };
 class DamageFigure extends React.Component<Props> {
   render() {
@@ -140,10 +168,10 @@ class DamageFigure extends React.Component<Props> {
     return damage_functions.map((fn, idx) => {
       const row = data[fn];
 
-      const x1 = scaler(row.estimates[0]);
-      const x2 = scaler(row.estimates[2]);
+      const x1 = scaler(row['16.7%']);
+      const x2 = scaler(row['83.3%']);
 
-      const median = scaler(row.estimates[1]);
+      const median = scaler(row['50%']);
 
       return (
         <React.Fragment key={fn}>
@@ -173,5 +201,84 @@ class DamageFigure extends React.Component<Props> {
         </React.Fragment>
       );
     });
+  }
+}
+
+type CSVFig1Props = {
+  country: string,
+  csvPath?: string,
+  children: React.Node<*>
+};
+
+type CSVFig1State = {
+  data: Array<CSVRow>,
+  loading: boolean
+};
+class CSVFig1Loader extends React.PureComponent<CSVFig1Props, CSVFig1State> {
+  state = {
+    data: [],
+    loading: false
+  };
+  static defaultProps = {
+    csvPath: `${process.env.PUBLIC_URL}/cscc_v1.csv`,
+    country: "WLD"
+  };
+
+  fetchData = () => {
+    const data = [];
+    const { ssp, rcp, dmg, prtp, eta, dmgfuncpar, climate } = this.props;
+    const test = row =>
+      row.ISO3 === this.props.country && row.eta === "1p5" && row.prtp === "2";
+    this.setState({ loading: true });
+    Papa.parse(this.props.csvPath, {
+      download: true,
+      header: true,
+      dynamicTyping: name => ["16.7%", "50%", "83.3%"].includes(name),
+      step: (results, parser) => {
+        const row = results.data[0];
+        // console.log(row.ISO3, this.props.country)
+        if (test(row)) {
+          data.push(row);
+          console.log('huh')
+        }
+      },
+      complete: () => {
+        console.log({data})
+        this.setState({ data, loading: false });
+      }
+    });
+  };
+
+  componentDidMount() {
+    this.fetchData();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.country !== this.props.country) {
+      this.fetchData();
+    }
+  }
+
+  render() {
+    const { data, loading } = this.state;
+
+    return this.props.children({ data, loading });
+  }
+}
+
+export class Fig1Options extends React.Component<>{
+  state={
+    data: [],
+    country: 'WLD',
+  };
+
+  render() {
+    const {country} = this.state;
+    return <div>
+      <CSVFig1Loader country={country}>
+        {({data, loading}) => {console.log(data); return <SCCFigure data={data} country={country} />}}
+        {/* <SCCFigure data={data} country={country} /> */}
+      </CSVFig1Loader>
+    </div>;
   }
 }

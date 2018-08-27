@@ -1,13 +1,13 @@
 // @flow
 import React, { Component } from "react";
 
-import SCCFigure from "./SccFig1";
+import SCCFigure, {Fig1Options} from "./SccFig1";
 import SCCFig2, { Fig2Options } from "./SccFig2";
 
 import Papa from "papaparse";
 
 import "./App.css";
-
+/*
 const fig1Filter = country => row =>
   row.eta === "1p5" && row.prtp === "2" && row.ISO3 === country;
 
@@ -27,51 +27,14 @@ const fetchCountryFig1 = (countryName, filterFn) => {
     complete: () => console.log(data)
   });
 };
-
+*/
 class App extends Component {
-  state = { country: "WLD" };
-
-  componentDidMount() {
-    // fetchCountryFig1('USA');
-  }
 
   render() {
-    const allData = {
-      // WLD: { data: wldData, clampRight: undefined },
-      // USA: { data: usData },
-      // RUS: { data: rusData, clampRight: undefined }
-    };
     return (
       <div className="App">
-        {false && (
-          <React.Fragment>
-            <button
-              onClick={() => this.setState({ country: "WLD" })}
-              className={this.state.country === "WLD" ? "active" : undefined}
-            >
-              world
-            </button>
-            <button
-              onClick={() => this.setState({ country: "USA" })}
-              className={this.state.country === "USA" ? "active" : undefined}
-            >
-              usa
-            </button>
-            <button
-              onClick={() => this.setState({ country: "RUS" })}
-              className={this.state.country === "RUS" ? "active" : undefined}
-            >
-              russia
-            </button>
-            <SCCFigure
-              data={allData[this.state.country].data}
-              clamp={allData[this.state.country].clampRight}
-              country={this.state.country}
-            />
-          </React.Fragment>
-        )}
-
-        <Fig2Options />
+        {/* <Fig2Options /> */}
+        <Fig1Options />
       </div>
     );
   }
