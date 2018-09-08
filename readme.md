@@ -24,3 +24,6 @@ there's a makefile here which you can use to download the latest co2 emissions d
 
 it will write the file to `sourcedata/co2e-latest.csv`
 
+generate csv files for web with
+
+    python scripts/all_csvs.py --dest vis/public sourcedata/cscc_v1.csv
