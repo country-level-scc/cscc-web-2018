@@ -4,6 +4,7 @@ import { scaleLinear } from "d3-scale";
 import _range from "lodash/range";
 import { Motion, spring } from "react-motion";
 import Papa from "papaparse";
+import CSVLoader from './csv-loader';
 
 import {SSPS, RCPS} from './constants';
 
@@ -302,11 +303,14 @@ export class Fig1Options extends React.Component<F1Props, F1State> {
           ))}
         </select>
         <button onClick={() => this.props.onCountryChange('WLD')}>reset to world</button>
-        <CSVFig1Loader country={country}>
+        <CSVLoader test={this.fixedDiscounting} csvPath={`${process.env.PUBLIC_URL || ''}/iso3_${country}.csv`}>
           {({ data, loading }) => <SCCFigure data={data} country={country} />}
-        </CSVFig1Loader>
+        </CSVLoader>
       </div>
     );
+  }
+  fixedDiscounting(row) {
+    return row.prtp === '2';
   }
 }
 

@@ -5,8 +5,9 @@ import Papa from 'papaparse'
 
 type CSVLoaderProps<Row> = {
   test: (row: Row) => boolean,
+  dynamicTyping: (columnName: string) => boolean,
   csvPath: string,
-  children: React.Node<*>
+  children: ({data: Array<Row>, loading: boolean}) => React.Node
 };
 
 type CSVLoaderState<Out> = {
@@ -14,27 +15,30 @@ type CSVLoaderState<Out> = {
   loading: boolean
 };
 
-class CSVLoader<Row, Out> extends React.PureComponent<CSVLoaderProps<Row>, CSVLoaderState<Out>> {
+class CSVLoader<Row, Out> extends React.PureComponent<
+  CSVLoaderProps<Row>,
+  CSVLoaderState<Out>
+> {
   state = {
     data: [],
     loading: false
   };
 
   static defaultProps = {
-    csvPath: `${process.env.PUBLIC_URL}/cscc_v1.csv`,
+    csvPath: `${process.env.PUBLIC_URL || ''}/cscc_v1.csv`,
+    dynamicTyping: (name: string) => ["16.7%", "50%", "83.3%"].includes(name),
+    test: (row: Row) => true,
   };
 
   fetchData = () => {
     const data = [];
-    const { country } = this.props;
     this.setState({ loading: true });
     Papa.parse(this.props.csvPath, {
       download: true,
       header: true,
-      dynamicTyping: name => ["16.7%", "50%", "83.3%"].includes(name),
+      dynamicTyping: this.props.dynamicTyping,
       step: (results, parser) => {
         const row = results.data[0];
-        // console.log(row.ISO3, this.props.country)
         if (this.props.test(row)) {
           data.push(row);
         }
@@ -50,7 +54,7 @@ class CSVLoader<Row, Out> extends React.PureComponent<CSVLoaderProps<Row>, CSVLo
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.country !== this.props.country) {
+    if (prevProps.csvPath !== this.props.csvPath) {
       this.fetchData();
     }
   }

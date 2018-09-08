@@ -15,13 +15,14 @@ export class CSVCsccFig4 extends React.PureComponent<*, *> {
 
   render() {
     const { width, height } = this.props;
-    const test = row =>
-      row.rcp === this.props.rcp &&
-      row.ssp === this.props.ssp &&
-      row.dmg === this.props.dmg;
+    const { dmg, rcp, ssp } = this.props;
+    const csvPath = `rcp_${rcp}_dmg_${dmg}_ssp_${ssp}`;
+    const test = row => row.prtp === '2';
     return (
-      <CSVLoader test={test}>
-        {(data, loading) => <CsccFig4 data={data} />}
+      <CSVLoader test={test} csvPath={`${process.env.PUBLIC_URL || ""}/${csvPath}`}>
+        {(data, loading) => (
+          <CsccFig4 data={data} width={width} height={height} />
+        )}
       </CSVLoader>
     );
   }
@@ -145,6 +146,7 @@ const SlopeLines = ({ scaleX, scaleY, domainX, domainY, slopes }) => (
       const xInt = x === 2 || x === 4 ? domainX[1] : yInt / m;
       return (
         <line
+          key={`${x}:${y}`}
           id={`${x}:${y}`}
           x1={scaleX(0)}
           y1={scaleY(0)}

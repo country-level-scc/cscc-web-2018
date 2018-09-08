@@ -6,6 +6,7 @@ import { geoNaturalEarth1, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import map from "./ne_110_topo_quant.json";
 import { schemeRdYlBu } from "d3-scale-chromatic";
+import CSVLoader from "./csv-loader";
 
 import Papa from "papaparse";
 
@@ -50,7 +51,7 @@ class Figure2 extends React.Component<Props> {
                   this.props.onCountryEnter &&
                   this.props.onCountryEnter(label, countryRow)
                 }
-                style={{cursor: 'pointer'}}
+                style={{ cursor: "pointer" }}
                 onClick={() => this.props.onCountryClick(id)}
               />
             );
@@ -187,7 +188,7 @@ const Fig2Legend = ({ bins, labels, size = 15, x, y }) => {
 };
 
 type ParamProps = {
-  onCountrySelect: (iso3: string) => any,
+  onCountrySelect: (iso3: string) => any
 };
 type ParamState = {
   ssp: "SSP1" | "SSP2" | "SSP3" | "SSP4" | "SSP5",
@@ -206,6 +207,11 @@ export class Fig2Options extends React.Component<ParamProps, ParamState> {
   update = evt => {
     this.setState({ [evt.currentTarget.name]: evt.currentTarget.value });
   };
+
+  fixedDiscounting(row) {
+    return row.prtp === '2'
+  };
+
   render() {
     const ssps = ["SSP1", "SSP2", "SSP3", "SSP4", "SSP5"];
     const rcps = ["rcp45", "rcp60", "rcp85"];
@@ -244,24 +250,39 @@ export class Fig2Options extends React.Component<ParamProps, ParamState> {
             ))}
           </select>
         </div>
-        <CSVFig2Loader
-          ssp={this.state.ssp}
-          dmg={this.state.dmg}
-          rcp={this.state.rcp}
+        <CSVLoader
+          csvPath={`${process.env.PUBLIC_URL}/rcp_${this.state.rcp}_dmg_${
+            this.state.dmg
+          }_ssp_${this.state.ssp}.csv`}
+          test={this.fixedDiscounting}
         >
           {({ data, loading }) => (
             <div className={loading ? "loading-map" : undefined}>
-              <Figure2 data={data} onCountryEnter={this.hoverCountry} onCountryClick={this.props.onCountrySelect} />
+              <Figure2
+                data={data}
+                onCountryEnter={this.hoverCountry}
+                onCountryClick={this.props.onCountrySelect}
+              />
             </div>
           )}
-        </CSVFig2Loader>
+        </CSVLoader>
 
         <div
           className="f2-country-detail"
           style={{ borderTop: `3px solid ${colorFor(hoveredData)}` }}
         >
           <p className="f2-countryname">
-            <strong>{this.state.hoveredName} {hoveredData && hoveredData.ISO3 && <button onClick={() => this.props.onCountrySelect(hoveredData.ISO3)}>👇</button>}</strong>
+            <strong>
+              {this.state.hoveredName}{" "}
+              {hoveredData &&
+                hoveredData.ISO3 && (
+                  <button
+                    onClick={() => this.props.onCountrySelect(hoveredData.ISO3)}
+                  >
+                    👇
+                  </button>
+                )}
+            </strong>
           </p>
           {hoveredData ? (
             <React.Fragment>
