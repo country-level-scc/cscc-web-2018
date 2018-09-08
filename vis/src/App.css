@@ -42,6 +42,11 @@
   font-style: italic;
 }
 
+.fig1-major-y-label {
+  white-space: normal;
+  width: 50px;
+}
+
 @keyframes pulse {
   0% { opacity: 1}
   50% { opacity: 0.3}

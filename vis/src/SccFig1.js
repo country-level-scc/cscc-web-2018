@@ -5,6 +5,8 @@ import _range from "lodash/range";
 import { Motion, spring } from "react-motion";
 import Papa from "papaparse";
 
+import {SSPS, RCPS} from './constants';
+
 type SSP = "SSP1" | "SSP2" | "SSP3" | "SSP4" | "SSP5";
 type RCP = "rcp45" | "rcp60" | "rcp85";
 type DMG = "bhm_sr" | "bhm_richpoor_sr" | "bhm_lr" | "bhm_richpoor_lr" | "djo";
@@ -41,7 +43,8 @@ const Scales = ({ min, max, scaler, slices = 5 }) => {
   const ticks = _range(Math.floor(min), Math.ceil(max), sliceWidth);
   return (
     <g>
-      <line y1={290} y2={290} stroke="#aaa" x1={0} x2={400} />
+      <line x1={1} x2={1} y1={0} y2={290} stroke="#aaa"/>
+      <line y1={290} y2={290} stroke="#aaa" x1={1} x2={400} />
       {ticks.map((t, idx) => (
         <Motion
           key={idx}
@@ -117,13 +120,16 @@ const SCCFigure = ({
     .range([10, 390]);
 
   return (
-    <svg viewBox="0 0 400 320" width="800" height="640">
-      {["SSP1", "SSP2", "SSP3", "SSP4", "SSP5"].map((ssp, i) => (
-        <g key={ssp} transform={`translate(0,${i * 60})`}>
+    <svg viewBox="-100 -5 500 420" width="800" height="640">
+      {SSPS.map(({label, value: ssp}, i) => {
+        const startY = i*60;
+        return <g key={ssp} transform={`translate(0,${startY})`}>
           <DamageGroup ssp={ssp} data={data} scaler={scaler} />
+          <text className="fig1-major-y-label" y={8} x={-20} textAnchor="end" style={{fontSize: 6, width: 40, whiteSpace: 'wrap'}}>{label}</text>
         </g>
-      ))}
+      })}
       <Scales min={min} max={maxActual} scaler={scaler} />
+
       <text className="fig1-attr" x={400} y={310} textAnchor="end">
         Ricke et al. Country-level social cost of carbon. (2018).
       </text>
@@ -133,7 +139,7 @@ const SCCFigure = ({
 export default SCCFigure;
 
 const DamageGroup = ({ ssp, data, scaler }) => {
-  return ["rcp45", "rcp60", "rcp85"].map((rcp, j) => (
+  return RCPS.map(({value: rcp, label}, j) => (
     <g
       key={rcp}
       transform={`translate(0,${j * 15})`}
@@ -146,6 +152,8 @@ const DamageGroup = ({ ssp, data, scaler }) => {
         data={dataForParams(data, ssp, rcp)}
         scaler={scaler}
       />
+      <text x={-2} y={4} textAnchor="end" strokeWidth={0} style={{fontSize: 4}}>{label}</text>
+      <line x1={1} y1={2} x2={4} y2={2} strokeWidth={1} stroke="#aaa" />
     </g>
   ));
 };
