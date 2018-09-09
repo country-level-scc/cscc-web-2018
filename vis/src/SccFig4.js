@@ -1,27 +1,121 @@
 // @flow
 
 import * as React from "react";
-import { scaleLinear, scaleDiverging } from "d3-scale";
+import { scaleLinear, scaleDiverging, scaleLog } from "d3-scale";
 import { interpolateRdBu } from "d3-scale-chromatic";
 
 import CSVLoader from "./csv-loader.js";
 
-export class CSVCsccFig4 extends React.PureComponent<*, *> {
+export class Fig4DataLoader extends React.PureComponent<*, *> {
   static defaultProps = {
     ssp: "SSP2",
-    rcp: "rpp60",
-    dmg: "bhm_sr"
+    rcp: "rcp60",
+    dmg: "bhm_sr",
+    discounting: 'fixed',
+    countriesToPlot: [
+      "ARG",
+      "AUS",
+      "BRA",
+      "CAN",
+      "CHN",
+      "DEU",
+      "FRA",
+      "GBR",
+      "IDN",
+      "IND",
+      "ITA",
+      "JPN",
+      "KOR",
+      "MEX",
+      "RUS",
+      "SAU",
+      "TUR",
+      "USA",
+      "ZAF"
+    ]
   };
+
+  static growthAdjustedDiscounting(row: { prtp: string }) {
+    return (
+      row.prtp !== "2" &&
+      row.dmgfuncpar === "bootstrap" &&
+      row.climate === "uncertain"
+    );
+  }
+
+  static fixedDiscounting(row: { prtp: string }) {
+    return (
+      row.prtp === "2" &&
+      row.dmgfuncpar === "bootstrap" &&
+      row.climate === "uncertain"
+    );
+  }
+
+  basicFilter(row: *) {
+    return (
+      row.prtp === "2" &&
+      row.dmgfuncpar === "bootstrap" &&
+      row.climate === "uncertain"
+    );
+  }
 
   render() {
     const { width, height } = this.props;
     const { dmg, rcp, ssp } = this.props;
-    const csvPath = `rcp_${rcp}_dmg_${dmg}_ssp_${ssp}`;
-    const test = row => row.prtp === '2';
+    const csvPath = `rcp_${rcp}_dmg_${dmg}_ssp_${ssp}.csv`;
+    const test = this.props.discounting === 'fixed' ?
+      Fig4DataLoader.fixedDiscounting :
+      Fig4DataLoader.growthAdjustedDiscounting;
+
     return (
-      <CSVLoader test={test} csvPath={`${process.env.PUBLIC_URL || ""}/${csvPath}`}>
-        {(data, loading) => (
-          <CsccFig4 data={data} width={width} height={height} />
+      <CSVLoader
+        test={test}
+        csvPath={`${process.env.PUBLIC_URL || ""}/${csvPath}`}
+      >
+        {({ data: csccData, loading: csccLoading }) => (
+          <CSVLoader
+            dynamicTyping={col => !col.includes("Country")}
+            csvPath={`${process.env.PUBLIC_URL || ""}/gdp_pop_co2e.csv`}
+          >
+            {({ data: wbData, loading: pgLoading }) => {
+              const worldData = csccData.find(r => r.ISO3 === "WLD");
+              const totalCscc = worldData ? worldData["50%"] : 1;
+              const allData = csccData
+                .map(row => {
+                  const worldBankData = wbData.find(
+                    r => r["Country Code"] === row.ISO3
+                  );
+                  if (worldBankData) {
+                    // Country Name,Country Code,2017 GDP,2017 Population,2014 Emissions,Emissions Share
+                    return {
+                      sccPerCapita: worldBankData["2017 Population"]
+                        ? (1000000 * row["50%"]) /
+                          worldBankData["2017 Population"]
+                        : 0,
+                      logGdp:
+                        worldBankData["2017 GDP"] > 0
+                          ? Math.log10(worldBankData["2017 GDP"])
+                          : 0,
+                      gdp: worldBankData["2017 GDP"],
+                      shareEmissions: 100 * worldBankData["Emissions Share"],
+                      shareScc: (100 * row["50%"]) / totalCscc,
+                      ISO3: row.ISO3, // extras:
+                      label: worldBankData["Country Name"]
+                    };
+                  } else {
+                    console.warn(`no matching data for ${row.ISO3}`);
+                    return row;
+                  }
+                })
+                .filter(row => this.props.countriesToPlot.includes(row.ISO3));
+
+              return this.props.children
+                ? this.props.children({
+                    data: allData
+                  })
+                : null;
+            }}
+          </CSVLoader>
         )}
       </CSVLoader>
     );
@@ -34,11 +128,14 @@ export class CsccFig4 extends React.Component<*, *> {
     height: 300,
     data: [],
     domainX: [-1, 32],
-    domainY: [-4, 23]
+    domainY: [-4, 23],
+    xAxis: [0, 10, 20, 30],
+    yAxis: [0, 5, 10, 15, 20],
+    labelCountries: ["USA"]
   };
 
   render() {
-    const { width, height, domainX, domainY } = this.props;
+    const { data, width, height, domainX, domainY } = this.props;
     // both input domain and ranges are specified as in paper
     const scaleX = scaleLinear()
       .domain(domainX)
@@ -46,46 +143,65 @@ export class CsccFig4 extends React.Component<*, *> {
     const scaleY = scaleLinear() // invert axes
       .domain(domainY)
       .range([height, 0]);
-    const scaleR = scaleLinear()
-      .domain([0, 20])
-      .range([0, scaleX(4)]);
+
+    const gdps = data.map(r => r.gdp);
+    const gdpDomain =
+      gdps.length > 0 ? [Math.min(...gdps), Math.max(...gdps)] : [5.3, 14];
+
+    const scaleR = scaleLog()
+      .domain(gdpDomain)
+      .range([1, 30]);
 
     const color = scaleDiverging(interpolateRdBu)
-      .domain([-0.25, 0, 0.5])
+      .domain([-0.15, 0, 0.23])
       .clamp(true);
 
     return (
-      <svg
-        width={width}
-        height={height}
-        viewBox={`-30 -30 ${width + 60} ${height + 60}`}
-        style={{ border: "1px solid #ccc" }}
-      >
+      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
         <Fig4Axes
           domainX={domainX}
           domainY={domainY}
           scaleX={scaleX.clamp(true)}
           scaleY={scaleY.clamp(true)}
+          xAxis={this.props.xAxis}
+          yAxis={this.props.yAxis}
         />
-        {this.props.data.map(row => {
-          return (
-            <circle
-              key={row.ISO3}
-              cx={scaleX(row.shareEmissions)}
-              cy={scaleY(row.shareScc)}
-              fill={color(-0.75 * row.sccPerCapita)}
-              r={scaleR(row.logGdp / 2)}
-              strokeWidth={1}
-              stroke="#444"
-            />
-          );
-        })}
+        {data
+          .filter(row => {
+            return (
+              row.shareEmissions <= domainX[1] && row.shareScc <= domainY[1]
+            );
+          })
+          .map(row => {
+            return (
+              <React.Fragment key={row.ISO3}>
+                <circle
+                  key={row.ISO3}
+                  cx={scaleX(row.shareEmissions)}
+                  cy={scaleY(row.shareScc)}
+                  fill={color(-0.75 * row.sccPerCapita)}
+                  r={scaleR(row.gdp) / 2}
+                  strokeWidth={1}
+                  stroke="#444"
+                />
+                {this.props.labelCountries.includes(row.ISO3) && (
+                  <text
+                    style={{ fontSize: 12 }}
+                    x={scaleX(row.shareEmissions)}
+                    y={scaleY(row.shareScc) + scaleR(row.gdp) * 0.75}
+                  >
+                    {row.label}
+                  </text>
+                )}
+              </React.Fragment>
+            );
+          })}
       </svg>
     );
   }
 }
 
-const Fig4Axes = ({ domainX, domainY, scaleX, scaleY }) => {
+const Fig4Axes = ({ xAxis, yAxis, domainX, domainY, scaleX, scaleY }) => {
   return (
     <g>
       <rect
@@ -97,8 +213,9 @@ const Fig4Axes = ({ domainX, domainY, scaleX, scaleY }) => {
         stroke="#ccc"
         strokeWidth={1}
       />
-      {[0, 10, 20, 30].map(x => (
+      {xAxis.map(x => (
         <line
+          key={`xAxisAt${x}`}
           x1={scaleX(x)}
           x2={scaleX(x)}
           y1={scaleY(40)}
@@ -107,8 +224,9 @@ const Fig4Axes = ({ domainX, domainY, scaleX, scaleY }) => {
           strokeWidth={1}
         />
       ))}
-      {[-5, 0, 5, 10, 15, 20].map(y => (
+      {yAxis.map(y => (
         <line
+          key={`xAxisAt${y}`}
           x1={scaleX(-20)}
           x2={scaleX(40)}
           y1={scaleY(y)}

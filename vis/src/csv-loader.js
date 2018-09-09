@@ -57,6 +57,9 @@ class CSVLoader<Row, Out> extends React.PureComponent<
     if (prevProps.csvPath !== this.props.csvPath) {
       this.fetchData();
     }
+    if (prevProps.test !== this.props.test) {
+      this.fetchData();
+    }
   }
 
   render() {
