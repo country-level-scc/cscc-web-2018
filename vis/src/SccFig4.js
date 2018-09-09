@@ -3,6 +3,7 @@
 import * as React from "react";
 import { scaleLinear, scaleDiverging, scaleLog } from "d3-scale";
 import { interpolateRdBu } from "d3-scale-chromatic";
+import { Motion, spring } from "react-motion";
 
 import CSVLoader from "./csv-loader.js";
 
@@ -11,7 +12,7 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
     ssp: "SSP2",
     rcp: "rcp60",
     dmg: "bhm_sr",
-    discounting: 'fixed',
+    discounting: "fixed",
     countriesToPlot: [
       "ARG",
       "AUS",
@@ -63,9 +64,10 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
     const { width, height } = this.props;
     const { dmg, rcp, ssp } = this.props;
     const csvPath = `rcp_${rcp}_dmg_${dmg}_ssp_${ssp}.csv`;
-    const test = this.props.discounting === 'fixed' ?
-      Fig4DataLoader.fixedDiscounting :
-      Fig4DataLoader.growthAdjustedDiscounting;
+    const test =
+      this.props.discounting === "fixed"
+        ? Fig4DataLoader.fixedDiscounting
+        : Fig4DataLoader.growthAdjustedDiscounting;
 
     return (
       <CSVLoader
@@ -174,26 +176,46 @@ export class CsccFig4 extends React.Component<*, *> {
           })
           .map(row => {
             return (
-              <React.Fragment key={row.ISO3}>
-                <circle
-                  key={row.ISO3}
-                  cx={scaleX(row.shareEmissions)}
-                  cy={scaleY(row.shareScc)}
-                  fill={color(-0.75 * row.sccPerCapita)}
-                  r={scaleR(row.gdp) / 2}
-                  strokeWidth={1}
-                  stroke="#444"
-                />
-                {this.props.labelCountries.includes(row.ISO3) && (
-                  <text
-                    style={{ fontSize: 12 }}
-                    x={scaleX(row.shareEmissions)}
-                    y={scaleY(row.shareScc) + scaleR(row.gdp) * 0.75}
-                  >
-                    {row.label}
-                  </text>
+              <Motion
+                key={row.ISO3}
+                defaultStyle={{
+                  x: scaleX(0),
+                  y: scaleY(0),
+                  r: 0,
+                  capita: 0,
+                  textY: scaleY(0),
+                }}
+                style={{
+                  x: spring(scaleX(row.shareEmissions)),
+                  y: spring(scaleY(row.shareScc)),
+                  capita: spring(-0.75 * row.sccPerCapita),
+                  r: spring(scaleR(row.gdp) / 2), // fill: color(spring(-0.75 * row.sccPerCapita)),
+                  textY: spring(scaleY(row.shareScc) + scaleR(row.gdp) * 0.75)
+                }}
+              >
+                {values => (
+                  <React.Fragment key={row.ISO3}>
+                    <circle
+                      key={row.ISO3}
+                      cx={values.x}
+                      cy={values.y}
+                      fill={color(-0.75 * row.sccPerCapita)}
+                      r={values.r}
+                      strokeWidth={1}
+                      stroke="#444"
+                    />
+                    {this.props.labelCountries.includes(row.ISO3) && (
+                      <text
+                        style={{ fontSize: 12 }}
+                        x={scaleX(row.shareEmissions)}
+                        y={values.y+scaleR(row.gdp) * 0.75}
+                      >
+                        {row.label}
+                      </text>
+                    )}
+                  </React.Fragment>
                 )}
-              </React.Fragment>
+              </Motion>
             );
           })}
       </svg>
