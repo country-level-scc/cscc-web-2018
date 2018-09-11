@@ -60,6 +60,68 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
     );
   }
 
+  getEuData(csccData, wbData) {
+    const euCountries = [
+      "AUT",
+      "BEL",
+      "BGR",
+      "HRV",
+      "CYP",
+      "CZE",
+      "DNK",
+      "EST",
+      "FIN",
+      "FRA",
+      "DEU",
+      "GRC",
+      "HUN",
+      "IRL",
+      "ITA",
+      "LVA",
+      "LTU",
+      "LUX",
+      "MLT",
+      "NLD",
+      "POL",
+      "PRT",
+      "ROU",
+      "SVK",
+      "SVN",
+      "ESP",
+      "SWE",
+      "GBR"
+    ];
+    const worldCsccData = csccData.find(r => r.ISO3 === "WLD");
+    const worldData = wbData.find(r => r["Country Code"] === "WLD");
+
+    if (!worldCsccData) {
+      return;
+    }
+
+    const wbEu = wbData.filter(r => euCountries.includes(r["Country Code"]));
+    const csccEu = csccData.filter(r => euCountries.includes(r.ISO3));
+
+    const euCo2eShare = wbEu.reduce(
+      (acc, curr) => acc + curr["Emissions Share"],
+      0
+    );
+    const euPop = wbEu.reduce((acc, curr) => acc + curr["2017 Population"], 0);
+    const euGdp = wbEu.reduce((acc, curr) => acc + curr["2017 GDP"], 0);
+    const euScc = csccEu.reduce((acc, curr) => acc + curr["50%"], 0);
+    const euSccPerCapita = (1000000 * euScc) / euPop;
+    const euLogGdp = Math.log10(euGdp);
+    return {
+      sccPerCapita: euSccPerCapita,
+      logGdp: euLogGdp,
+      gdp: euGdp,
+      shareEmissions: 100 * euCo2eShare,
+      shareScc: (100 * euScc) / worldCsccData["50%"],
+      ISO3: "EUC",
+      label: "The EU",
+      population: euPop
+    };
+  }
+
   render() {
     const { width, height } = this.props;
     const { dmg, rcp, ssp } = this.props;
@@ -80,8 +142,12 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
             csvPath={`${process.env.PUBLIC_URL || ""}/gdp_pop_co2e.csv`}
           >
             {({ data: wbData, loading: pgLoading }) => {
-              const worldData = csccData.find(r => r.ISO3 === "WLD");
-              const totalCscc = worldData ? worldData["50%"] : 1;
+              const worldCsccData = csccData.find(r => r.ISO3 === "WLD");
+              const worldData = wbData.find(r => r["Country Code"] === "WLD");
+
+              const euData = this.getEuData(csccData, wbData);
+
+              const totalCscc = worldCsccData ? worldCsccData["50%"] : 1;
               const allData = csccData
                 .map(row => {
                   const worldBankData = wbData.find(
@@ -113,7 +179,7 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
 
               return this.props.children
                 ? this.props.children({
-                    data: allData
+                    data: euData ? [...allData, euData] : allData
                   })
                 : null;
             }}
@@ -130,22 +196,21 @@ export class CsccFig4 extends React.Component<*, *> {
     height: 300,
     data: [],
     domainX: [-1, 32],
-    domainY: [-4, 23],
+    domainY: [-6, 23],
     xAxis: [0, 10, 20, 30],
-    yAxis: [0, 5, 10, 15, 20],
-    labelCountries: ["USA"]
+    yAxis: [-5, 0, 5, 10, 15, 20],
+    labelCountries: ["USA", "CHN", "IND", "EUC"],
+    clip: false,
   };
 
   render() {
-    const { data, width, height, domainX, domainY } = this.props;
-    // both input domain and ranges are specified as in paper
-    const scaleX = scaleLinear()
-      .domain(domainX)
-      .range([0, width]);
-    const scaleY = scaleLinear() // invert axes
-      .domain(domainY)
-      .range([height, 0]);
-
+    const {
+      data,
+      width,
+      height,
+      domainX,
+      domainY: initialDomainY
+    } = this.props;
     const gdps = data.map(r => r.gdp);
     const gdpDomain =
       gdps.length > 0 ? [Math.min(...gdps), Math.max(...gdps)] : [5.3, 14];
@@ -153,6 +218,24 @@ export class CsccFig4 extends React.Component<*, *> {
     const scaleR = scaleLog()
       .domain(gdpDomain)
       .range([1, 30]);
+
+    // both input domain and ranges are specified as in paper
+    const scaleX = scaleLinear()
+      .domain(domainX)
+      .range([0, width]);
+
+    const shareSccs = data.map(r => r.shareScc);
+    // y axis is shareScc
+    // width is logGdp
+    // const maxGdp = gdps.length > 0 ? Math.log10(Math.max(...gdps)) : 0;
+    const maxGdp= 4
+    const domainY =
+      width > 399
+        ? [Math.min(...shareSccs) - maxGdp, Math.max(...shareSccs) + maxGdp]
+        : initialDomainY;
+    const scaleY = scaleLinear() // invert axes
+      .domain(domainY)
+      .range([height, 0]);
 
     const color = scaleDiverging(interpolateRdBu)
       .domain([-0.15, 0, 0.23])
@@ -170,9 +253,8 @@ export class CsccFig4 extends React.Component<*, *> {
         />
         {data
           .filter(row => {
-            return (
-              row.shareEmissions <= domainX[1] && row.shareScc <= domainY[1]
-            );
+            // could use this to clip data if clip prop specified
+            return this.props.clip ? row.shareEmissions <= domainX[1] && row.shareScc <= domainY[1] : true;
           })
           .map(row => {
             return (
@@ -183,23 +265,26 @@ export class CsccFig4 extends React.Component<*, *> {
                   y: scaleY(0),
                   r: 0,
                   capita: 0,
-                  textY: scaleY(0),
+                  textY: scaleY(0)
                 }}
                 style={{
                   x: spring(scaleX(row.shareEmissions)),
                   y: spring(scaleY(row.shareScc)),
                   capita: spring(-0.75 * row.sccPerCapita),
-                  r: spring(scaleR(row.gdp) / 2), // fill: color(spring(-0.75 * row.sccPerCapita)),
-                  textY: spring(scaleY(row.shareScc) + scaleR(row.gdp) * 0.75)
+                  r: spring(scaleR(row.gdp) / 2),
+                  textY: spring(scaleY(row.shareScc) + scaleR(row.gdp) * 0.95)
                 }}
               >
                 {values => (
                   <React.Fragment key={row.ISO3}>
                     <circle
+                      title={`${row.label}: ${color(values.capita)}`}
                       key={row.ISO3}
                       cx={values.x}
                       cy={values.y}
-                      fill={color(-0.75 * row.sccPerCapita)}
+                      fill={
+                        color(values.capita) /*color(-0.75 * row.sccPerCapita)*/
+                      }
                       r={values.r}
                       strokeWidth={1}
                       stroke="#444"
@@ -208,7 +293,7 @@ export class CsccFig4 extends React.Component<*, *> {
                       <text
                         style={{ fontSize: 12 }}
                         x={scaleX(row.shareEmissions)}
-                        y={values.y+scaleR(row.gdp) * 0.75}
+                        y={values.y + scaleR(row.gdp) * 0.75}
                       >
                         {row.label}
                       </text>

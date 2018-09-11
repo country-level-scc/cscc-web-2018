@@ -23,7 +23,6 @@ export default class ParameterPicker extends React.Component<
     rcp: "rcp60",
     dmg: "bhm_sr",
     discounting: 'fixed',
-    // discounting: ParameterPicker.fixedDiscounting
   };
 
   static defaultProps = { callback: () => {} };
@@ -32,42 +31,26 @@ export default class ParameterPicker extends React.Component<
     this.setState({ [evt.currentTarget.name]: evt.currentTarget.value });
   };
 
-  static growthAdjustedDiscounting(row: { prtp: string }) {
-    return (
-      row.prtp !== "2" &&
-      row.dmgfuncpar === "bootstrap" &&
-      row.climate === "uncertain"
-    );
-  }
-
-  static fixedDiscounting(row: { prtp: string }) {
-    return (
-      row.prtp === "2" &&
-      row.dmgfuncpar === "bootstrap" &&
-      row.climate === "uncertain"
-    );
-  }
-
   render() {
     return (
       <div>
         <div>
           <div>
-            <select name="ssp" onChange={this.update}>
+            <select name="ssp" value={this.state.ssp} onChange={this.update}>
               {SSPS.map(ssp => (
                 <option key={ssp.value} value={ssp.value}>
                   {ssp.label}
                 </option>
               ))}
             </select>
-            <select name="rcp" onChange={this.update}>
+            <select name="rcp" value={this.state.rcp} onChange={this.update}>
               {RCPS.map(ssp => (
                 <option key={ssp.value} value={ssp.value}>
                   {ssp.label}
                 </option>
               ))}
             </select>
-            <select name="dmg" onChange={this.update}>
+            <select name="dmg" value={this.state.dmg} onChange={this.update}>
               {DMGS.map(ssp => (
                 <option key={ssp.value} value={ssp.value}>
                   {ssp.label}
@@ -75,7 +58,7 @@ export default class ParameterPicker extends React.Component<
               ))}
             </select>
             <select
-              name="discounting"
+              name="discounting" value={this.state.discounting}
               onChange={this.update}
             >
               {["fixed", "growth adjusted"].map(d => (

@@ -32,6 +32,7 @@ class App extends Component {
                     yAxis={[-2, 0, 2, 4, 6]}
                     domainX={[-0.2, 4.2]}
                     domainY={[-2.5, 6.2]}
+                    clip={true}
                     data={data}
                   />
                 )}
