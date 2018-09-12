@@ -198,7 +198,7 @@ export class CsccFig4 extends React.Component<*, *> {
     domainX: [-1, 32],
     domainY: [-6, 23],
     xAxis: [0, 10, 20, 30],
-    yAxis: [-5, 0, 5, 10, 15, 20],
+    yAxis: [-5, 0, 5, 10, 15, 20, 25, 30, 35],
     labelCountries: ["USA", "CHN", "IND", "EUC"],
     clip: false,
   };
@@ -332,7 +332,7 @@ const Fig4Axes = ({ xAxis, yAxis, domainX, domainY, scaleX, scaleY }) => {
         />
       ))}
       {yAxis.map(y => (
-        <Motion 
+        <Motion
           key={`xAxisAt${y}`}
           defaultStyle={{y: scaleY(y) || 0}}
           style={{y: spring(scaleY(y))}}

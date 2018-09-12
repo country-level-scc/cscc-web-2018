@@ -1,6 +1,75 @@
+/*
+font-family: 'Archivo', sans-serif;
+font-family: 'Archivo Narrow', sans-serif;
+font-family: 'Zilla Slab', serif;
+*/
+
 .App {
-  padding: 50px 0 100px 100px;
+  padding: 50px 100px
 }
+
+h1 {
+  font-family: 'Zilla Slab', serif;
+  font-size: 48px;
+  font-weight: 300;
+}
+
+.top-nav {
+  display: flex;
+  margin-bottom: 20px;
+}
+.top-nav button {
+  flex: 1;
+  font-family: Archivo, sans-serif;
+  font-size: 16px;
+  padding: 10px;
+  background: transparent;
+  border-width: 0;
+  border-bottom: 2px solid black;
+  cursor: pointer;
+}
+.top-nav .activeNavButton {
+  background: black;
+  color: white;
+}
+
+.caption {
+  font: 14px/22px 'Archivo', sans-serif;
+  max-width: 600px;
+}
+
+.param-picker {
+  font: 12px Archivo;
+  margin-bottom: 40px;
+  width: 775px;
+}
+.param-picker-row {
+  border-bottom: 1px solid black;
+  margin: 40px 0 6px;
+  display: flex;
+}
+.param-picker-row > *,
+.param-picker-descs > * {
+  flex: 0 0 175px;
+  margin-right: 25px;
+}
+.param-picker-row select {
+  appearance: none;
+  background: white;
+  padding: 6px 0;
+  border-radius: 0;
+  border-width: 0;
+  border-top: 1px solid black;
+}
+.param-picker-descs {
+  color: #666;
+  display: flex;
+}
+.param-picker-descs abbr {
+  text-decoration: underline dashed;
+  cursor: help;
+}
+
 .tickLabel {
   font-size: 5px;
 }

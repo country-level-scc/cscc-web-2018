@@ -34,8 +34,8 @@ export default class ParameterPicker extends React.Component<
   render() {
     return (
       <div>
-        <div>
-          <div>
+        <div className="param-picker">
+          <div className="param-picker-row">
             <select name="ssp" value={this.state.ssp} onChange={this.update}>
               {SSPS.map(ssp => (
                 <option key={ssp.value} value={ssp.value}>
@@ -67,6 +67,22 @@ export default class ParameterPicker extends React.Component<
                 </option>
               ))}
             </select>
+          </div>
+          <div className="param-picker-descs">
+            <div>
+              shared socioeconomic pathway scenarios
+            </div>
+            <div>
+              Representative Concentration Pathway
+            </div>
+            <div>
+              <abbr title="shared socioeconomic pathway scenarios">Damage Model</abbr>
+            </div>
+            <div>
+              Discounting<br /> {this.state.discounting === 'fixed' && <React.Fragment>Pure rate of time preference of 2% per year and an
+206 inter-temporal elasticity of substitution of 1.5</React.Fragment>}
+            </div>
+
           </div>
         </div>
         {this.props.children &&
