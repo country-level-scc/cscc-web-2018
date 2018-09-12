@@ -41,18 +41,6 @@ class App extends Component {
           )}
         </ParameterPicker>
 
-        {/* <CsccFig4
-          data={[
-            {
-              ISO3: "USA",
-              shareEmissions: 15.6,
-              shareScc: 11.7,
-              sccPerCapita: 0.3,
-              logGdp: 10
-            }
-          ]}
-        /> */}
-
         <Fig2Options
           onCountrySelect={selectedCountry =>
             this.setState({
@@ -65,6 +53,8 @@ class App extends Component {
           onCountryChange={selectedCountry =>
             this.setState({ selectedCountry })
           }
+          width={800}
+          height={640}
         />
       </div>
     );

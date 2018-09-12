@@ -4,9 +4,9 @@ import { scaleLinear } from "d3-scale";
 import _range from "lodash/range";
 import { Motion, spring } from "react-motion";
 import Papa from "papaparse";
-import CSVLoader from './csv-loader';
+import CSVLoader from "./csv-loader";
 
-import {SSPS, RCPS} from './constants';
+import { SSPS, RCPS } from "./constants";
 
 type SSP = "SSP1" | "SSP2" | "SSP3" | "SSP4" | "SSP5";
 type RCP = "rcp45" | "rcp60" | "rcp85";
@@ -44,8 +44,8 @@ const Scales = ({ min, max, scaler, slices = 5 }) => {
   const ticks = _range(Math.floor(min), Math.ceil(max), sliceWidth);
   return (
     <g>
-      <line x1={1} x2={1} y1={0} y2={290} stroke="#aaa"/>
-      <line y1={290} y2={290} stroke="#aaa" x1={1} x2={400} />
+      <line x1={1} x2={1} y1={0} y2={290} stroke="#aaa" />
+      <line y1={290} y2={290} stroke="#aaa" x1={1} x2={scaler(max)} />
       {ticks.map((t, idx) => (
         <Motion
           key={idx}
@@ -102,45 +102,61 @@ const inferredClamp = (data: Array<CSVRow>) => {
   }
 };
 
-const SCCFigure = ({
-  country,
-  data,
-  clamp
-}: {
+type Fig1Props = {
   country: string,
   data: *,
   clamp?: number
-}) => {
-  const { min, max } = minMax(data);
-  const inferred = inferredClamp(data);
-  const maxActual = clamp !== undefined ? clamp : Math.min(inferred, max);
-
-  const scaler = scaleLinear()
-    .clamp(true) // clamp b/c values may be negative
-    .domain([min, maxActual])
-    .range([10, 390]);
-
-  return (
-    <svg viewBox="-100 -5 500 420" width="800" height="640">
-      {SSPS.map(({label, value: ssp}, i) => {
-        const startY = i*60;
-        return <g key={ssp} transform={`translate(0,${startY})`}>
-          <DamageGroup ssp={ssp} data={data} scaler={scaler} />
-          <text className="fig1-major-y-label" y={8} x={-20} textAnchor="end" style={{fontSize: 6, width: 40, whiteSpace: 'wrap'}}>{label}</text>
-        </g>
-      })}
-      <Scales min={min} max={maxActual} scaler={scaler} />
-
-      <text className="fig1-attr" x={400} y={310} textAnchor="end">
-        Ricke et al. Country-level social cost of carbon. (2018).
-      </text>
-    </svg>
-  );
 };
+
+class SCCFigure extends React.Component<Fig1Props> {
+  static defaultProps={
+    width: 400,
+    height: 300,
+  }
+  render() {
+    const { country, data, clamp, width, height } = this.props;
+    const { min, max } = minMax(data);
+    const inferred = inferredClamp(data);
+    const maxActual = clamp !== undefined ? clamp : Math.min(inferred, max);
+
+    const scaler = scaleLinear()
+      .clamp(true) // clamp b/c values may be negative
+      .domain([min, maxActual])
+      .range([10, width - 20]);
+
+    return (
+      <svg viewBox={`-100 -5 ${width+100} ${height+20}`} width={width} height={height}>
+        {SSPS.map(({ label, value: ssp }, i) => {
+          const startY = i * 60;
+          return (
+            <g key={ssp} transform={`translate(0,${startY})`}>
+              <DamageGroup ssp={ssp} data={data} scaler={scaler} />
+              <text
+                className="fig1-major-y-label"
+                y={8}
+                x={-20}
+                textAnchor="end"
+                style={{ fontSize: 6, width: 40, whiteSpace: "wrap" }}
+              >
+                {label}
+              </text>
+            </g>
+          );
+        })}
+        <Scales min={min} max={maxActual} scaler={scaler} />
+
+        <text className="fig1-attr" x={400} y={310} textAnchor="end">
+          Ricke et al. Country-level social cost of carbon. (2018).
+        </text>
+      </svg>
+    );
+  }
+}
+
 export default SCCFigure;
 
 const DamageGroup = ({ ssp, data, scaler }) => {
-  return RCPS.map(({value: rcp, label}, j) => (
+  return RCPS.map(({ value: rcp, label }, j) => (
     <g
       key={rcp}
       transform={`translate(0,${j * 15})`}
@@ -153,7 +169,15 @@ const DamageGroup = ({ ssp, data, scaler }) => {
         data={dataForParams(data, ssp, rcp)}
         scaler={scaler}
       />
-      <text x={-2} y={4} textAnchor="end" strokeWidth={0} style={{fontSize: 4}}>{label}</text>
+      <text
+        x={-2}
+        y={4}
+        textAnchor="end"
+        strokeWidth={0}
+        style={{ fontSize: 4 }}
+      >
+        {label}
+      </text>
       <line x1={1} y1={2} x2={4} y2={2} strokeWidth={1} stroke="#aaa" />
     </g>
   ));
@@ -280,21 +304,20 @@ class CSVFig1Loader extends React.PureComponent<CSVFig1Props, CSVFig1State> {
 type F1Props = {
   country: string,
   onCountryChange: (country: string) => any,
+  width: number,
+  height: number
 };
-type F1State = {
-};
+type F1State = {};
 export class Fig1Options extends React.Component<F1Props, F1State> {
-
   render() {
-    const { country } = this.props;
+    const { country, width, height } = this.props;
     return (
       <div>
+        <div>
         <select
           name="country"
           value={this.props.country}
-          onChange={evt =>
-            this.props.onCountryChange(evt.target.value)
-          }
+          onChange={evt => this.props.onCountryChange(evt.target.value)}
         >
           {countries.map(({ id, label }, idx) => (
             <option key={id} value={id}>
@@ -302,15 +325,28 @@ export class Fig1Options extends React.Component<F1Props, F1State> {
             </option>
           ))}
         </select>
-        <button onClick={() => this.props.onCountryChange('WLD')}>reset to world</button>
-        <CSVLoader test={this.fixedDiscounting} csvPath={`${process.env.PUBLIC_URL || ''}/iso3_${country}.csv`}>
-          {({ data, loading }) => <SCCFigure data={data} country={country} />}
+        <button onClick={() => this.props.onCountryChange("WLD")}>  
+          reset to world
+        </button>
+        </div>
+        <CSVLoader
+          test={this.fixedDiscounting}
+          csvPath={`${process.env.PUBLIC_URL || ""}/iso3_${country}.csv`}
+        >
+          {({ data, loading }) => (
+            <SCCFigure
+              width={width}
+              height={height}
+              data={data}
+              country={country}
+            />
+          )}
         </CSVLoader>
       </div>
     );
   }
   fixedDiscounting(row) {
-    return row.prtp === '2';
+    return row.prtp === "2";
   }
 }
 

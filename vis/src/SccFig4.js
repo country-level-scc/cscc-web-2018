@@ -117,7 +117,7 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
       shareEmissions: 100 * euCo2eShare,
       shareScc: (100 * euScc) / worldCsccData["50%"],
       ISO3: "EUC",
-      label: "The EU",
+      label: "EU",
       population: euPop
     };
   }
@@ -224,7 +224,7 @@ export class CsccFig4 extends React.Component<*, *> {
       .domain(domainX)
       .range([0, width]);
 
-    const shareSccs = data.map(r => r.shareScc);
+    const shareSccs = data.length > 0 ? data.map(r => r.shareScc) : [-5, 25];
     // y axis is shareScc
     // width is logGdp
     // const maxGdp = gdps.length > 0 ? Math.log10(Math.max(...gdps)) : 0;
@@ -332,15 +332,18 @@ const Fig4Axes = ({ xAxis, yAxis, domainX, domainY, scaleX, scaleY }) => {
         />
       ))}
       {yAxis.map(y => (
-        <line
+        <Motion 
           key={`xAxisAt${y}`}
+          defaultStyle={{y: scaleY(y) || 0}}
+          style={{y: spring(scaleY(y))}}
+        >{(values) => <line
           x1={scaleX(-20)}
           x2={scaleX(40)}
-          y1={scaleY(y)}
-          y2={scaleY(y)}
+          y1={values.y}
+          y2={values.y}
           stroke="#ddd"
           strokeWidth={1}
-        />
+        />}</Motion>
       ))}
       <SlopeLines
         domainX={domainX}
