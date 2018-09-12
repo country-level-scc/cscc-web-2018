@@ -1,14 +1,14 @@
 // @flow
 
-import * as React from "react";
+import * as React from 'react';
 
-import { geoNaturalEarth1, geoPath } from "d3-geo";
-import { feature } from "topojson-client";
-import map from "./ne_110_topo_quant.json";
-import { schemeRdYlBu } from "d3-scale-chromatic";
-import CSVLoader from "./csv-loader";
-
-import Papa from "papaparse";
+import {geoNaturalEarth1, geoPath} from 'd3-geo';
+import {feature} from 'topojson-client';
+import map from './ne_110_topo_quant.json';
+import {schemeRdYlBu} from 'd3-scale-chromatic';
+import CSVLoader from './csv-loader';
+import ParameterPicker from './param-picker';
+import {RCPS, DMGS} from './constants'
 
 const projection = geoNaturalEarth1()
   .scale(100)
@@ -20,23 +20,23 @@ type Props = {
   ssp?: string,
   rcp?: string,
   dmg?: string,
-  onCountryEnter: (name: string, data: {}) => any
+  onCountryEnter: (name: string, data: {}) => any,
 };
 
 class Figure2 extends React.Component<Props> {
   render() {
-    const { data } = this.props;
+    const {data} = this.props;
 
     return (
       <svg width={800} height={350} viewBox="150 0 800 350">
         <g transform={`translate(675, 75)`}>
-          ><Fig2Legend bins={fig2Bins} labels={{ 0: "<-10", 7: ">100" }} />
+          ><Fig2Legend bins={fig2Bins} labels={{0: '<-10', 7: '>100'}} />
         </g>
         <g className="countries">
           {worldMap.map(country => {
             // access feature metadata via country.properties
             const {
-              properties: { label, id }
+              properties: {label, id},
             } = country;
             const countryRow = data.filter(row => row.ISO3 === id)[0];
 
@@ -51,7 +51,7 @@ class Figure2 extends React.Component<Props> {
                   this.props.onCountryEnter &&
                   this.props.onCountryEnter(label, countryRow)
                 }
-                style={{ cursor: "pointer" }}
+                style={{cursor: 'pointer'}}
                 onClick={() => this.props.onCountryClick(id)}
               />
             );
@@ -66,85 +66,21 @@ type CSVFig2Props = {
   ssp: string,
   rcp: string,
   dmg: string,
-  csvPath?: string
+  csvPath?: string,
 };
 type CSVFig2State = {
   data: Array<{}>,
-  loading: boolean
+  loading: boolean,
 };
-
-class CSVFig2Loader extends React.PureComponent<CSVFig2Props, CSVFig2State> {
-  state = {
-    data: [],
-    loading: false
-  };
-  static defaultProps = {
-    csvPath: `${process.env.PUBLIC_URL}/cscc_v1.csv`,
-    ssp: "SSP2",
-    rcp: "rcp60",
-    dmg: "bhm_sr",
-    prtp: "2",
-    eta: "1p5",
-    dmgfuncpar: "bootstrap",
-    climate: "uncertain"
-  };
-
-  fetchData = () => {
-    const data = [];
-    const { ssp, rcp, dmg, prtp, eta, dmgfuncpar, climate } = this.props;
-    const test = row =>
-      row.SSP === ssp &&
-      row.RCP === rcp &&
-      row.run === dmg &&
-      row.prtp === prtp &&
-      row.eta === eta &&
-      row.dmgfuncpar === dmgfuncpar &&
-      row.climate === climate;
-    this.setState({ loading: true });
-    Papa.parse(this.props.csvPath, {
-      download: true,
-      header: true,
-      dynamicTyping: name => ["16.7%", "50%", "83.3%"].includes(name),
-      step: (results, parser) => {
-        const row = results.data[0];
-        if (test(row)) {
-          data.push(row);
-        }
-      },
-      complete: () => {
-        this.setState({ data, loading: false });
-      }
-    });
-  };
-
-  componentDidMount() {
-    this.fetchData();
-  }
-
-  componentDidUpdate(prevProps) {
-    if (
-      prevProps.ssp !== this.props.ssp ||
-      prevProps.rcp !== this.props.rcp ||
-      prevProps.dmg !== this.props.dmg
-    ) {
-      this.fetchData();
-    }
-  }
-
-  render() {
-    const { loading, data } = this.state;
-    return this.props.children({ data, loading });
-  }
-}
 
 const colorFor = row => {
   if (row) {
-    const index = binner(row["50%"], true);
+    const index = binner(row['50%'], true);
     if (index > -1) {
       return schemeRdYlBu[11][index + 0];
     }
   }
-  return "#eee";
+  return '#eee';
 };
 
 const fig2Bins = [
@@ -155,7 +91,7 @@ const fig2Bins = [
   [1, 10],
   [10, 50],
   [50, 100],
-  [100, 100000]
+  [100, 100000],
 ];
 const binner = (val, invert = false, bins = fig2Bins) => {
   const indices = bins.map(([min, max]) => val > min && val <= max);
@@ -163,13 +99,13 @@ const binner = (val, invert = false, bins = fig2Bins) => {
   return invert ? bins.length - pos : pos;
 };
 
-const Fig2Legend = ({ bins, labels, size = 15, x, y }) => {
+const Fig2Legend = ({bins, labels, size = 15, x, y}) => {
   const height = (size + 1) * bins.length;
   return bins.map((bin, idx) => {
     return (
       <React.Fragment key={bin[0]}>
         <rect
-          fill={colorFor({ "50%": (bin[0] + bin[1]) / 2 })}
+          fill={colorFor({'50%': (bin[0] + bin[1]) / 2})}
           width={size}
           height={size}
           x={0}
@@ -188,92 +124,92 @@ const Fig2Legend = ({ bins, labels, size = 15, x, y }) => {
 };
 
 type ParamProps = {
-  onCountrySelect: (iso3: string) => any
+  onCountrySelect: (iso3: string) => any,
 };
 type ParamState = {
-  ssp: "SSP1" | "SSP2" | "SSP3" | "SSP4" | "SSP5",
-  rcp: "rcp45" | "rcp60" | "rcp85",
-  dmg: "bhm_sr" | "bhm_richpoor_sr" | "bhm_lr" | "bhm_richpoor_lr" | "djo",
+  ssp: 'SSP1' | 'SSP2' | 'SSP3' | 'SSP4' | 'SSP5',
+  rcp: 'rcp45' | 'rcp60' | 'rcp85',
+  dmg: 'bhm_sr' | 'bhm_richpoor_sr' | 'bhm_lr' | 'bhm_richpoor_lr' | 'djo',
   hoveredName?: string,
-  hoveredData?: {}
+  hoveredData?: {},
 };
 
 export class Fig2Options extends React.Component<ParamProps, ParamState> {
   state = {
-    ssp: "SSP2",
-    rcp: "rcp60",
-    dmg: "bhm_sr"
+    ssp: 'SSP2',
+    rcp: 'rcp60',
+    dmg: 'bhm_sr',
   };
   update = evt => {
-    this.setState({ [evt.currentTarget.name]: evt.currentTarget.value });
+    this.setState({[evt.currentTarget.name]: evt.currentTarget.value});
   };
 
-  fixedDiscounting(row) {
-    return row.prtp === '2'
-  };
+  static growthAdjustedDiscounting(row: { prtp: string }) {
+    return (
+      row.prtp !== "2" &&
+      row.dmgfuncpar === "bootstrap" &&
+      row.climate === "uncertain"
+    );
+  }
+
+  static fixedDiscounting(row: { prtp: string }) {
+    return (
+      row.prtp === "2" &&
+      row.dmgfuncpar === "bootstrap" &&
+      row.climate === "uncertain"
+    );
+  }
 
   render() {
-    const ssps = ["SSP1", "SSP2", "SSP3", "SSP4", "SSP5"];
-    const rcps = ["rcp45", "rcp60", "rcp85"];
+    const ssps = ['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5'];
+    const rcps = ['rcp45', 'rcp60', 'rcp85'];
     const dmgs = [
-      "bhm_sr",
-      "bhm_richpoor_sr",
-      "bhm_lr",
-      "bhm_richpoor_lr",
-      "djo"
+      'bhm_sr',
+      'bhm_richpoor_sr',
+      'bhm_lr',
+      'bhm_richpoor_lr',
+      'djo',
     ];
 
-    const { hoveredData } = this.state;
+    const {hoveredData} = this.state;
 
     return (
       <div>
-        <div>
-          <select name="ssp" onChange={this.update}>
-            {ssps.map(ssp => (
-              <option key={ssp} value={ssp}>
-                {ssp}
-              </option>
-            ))}
-          </select>
-          <select name="rcp" onChange={this.update}>
-            {rcps.map(ssp => (
-              <option key={ssp} value={ssp}>
-                {ssp}
-              </option>
-            ))}
-          </select>
-          <select name="dmg" onChange={this.update}>
-            {dmgs.map(ssp => (
-              <option key={ssp} value={ssp}>
-                {ssp}
-              </option>
-            ))}
-          </select>
-        </div>
-        <CSVLoader
-          csvPath={`${process.env.PUBLIC_URL}/rcp_${this.state.rcp}_dmg_${
-            this.state.dmg
-          }_ssp_${this.state.ssp}.csv`}
-          test={this.fixedDiscounting}
-        >
-          {({ data, loading }) => (
-            <div className={loading ? "loading-map" : undefined}>
-              <Figure2
-                data={data}
-                onCountryEnter={this.hoverCountry}
-                onCountryClick={this.props.onCountrySelect}
-              />
-            </div>
+        <ParameterPicker>
+          {({state: {rcp, ssp, dmg, discounting}}) => (
+            <CSVLoader
+              csvPath={`${process.env.PUBLIC_URL}/rcp_${rcp}_dmg_${
+                dmg
+              }_ssp_${ssp}.csv`}
+              test={discounting === 'fixed' ? Fig2Options.fixedDiscounting : Fig2Options.growthAdjustedDiscounting}
+            >
+              {({data, loading}) => (
+                <div className={loading ? 'loading-map' : undefined}>
+                  <Figure2
+                    data={data}
+                    onCountryEnter={this.hoverCountry}
+                    onCountryClick={this.props.onCountrySelect}
+                  />
+                              <p className="caption">
+            Spatial distribution of
+            median estimates of the CSCC computed for the reference case of scenario{' '}
+            {ssp}/{RCPS.find(x => x.value === rcp).label}, {DMGS.find(x => x.value === dmg).label} impact function ({dmg}), and a{' '}
+            {discounting === 'fixed' ? 'fixed discount rate' : 'growth adjusted discount rate with 2% pure rate of time preference and IES of 1.5'}.
+            </p>
+
+                </div>
+              )}
+            </CSVLoader>
           )}
-        </CSVLoader>
+        </ParameterPicker>
 
         <div
           className="f2-country-detail"
-          style={{ borderTop: `3px solid ${colorFor(hoveredData)}` }}
+          style={{borderTop: `3px solid ${colorFor(hoveredData)}`}}
         >
           <p className="f2-countryname">
             <strong>
-              {this.state.hoveredName}{" "}
+              {this.state.hoveredName}{' '}
               {hoveredData &&
                 hoveredData.ISO3 && (
                   <button
@@ -288,13 +224,13 @@ export class Fig2Options extends React.Component<ParamProps, ParamState> {
             <React.Fragment>
               <p>
                 <span className="f2-clscc">
-                  16.3%: {hoveredData && fmt(hoveredData["16.7%"])}
+                  16.3%: {hoveredData && fmt(hoveredData['16.7%'])}
                 </span>
                 <span className="f2-clscc">
-                  50%: {hoveredData && fmt(hoveredData["50%"])}
+                  50%: {hoveredData && fmt(hoveredData['50%'])}
                 </span>
                 <span className="f2-clscc">
-                  83.3%: {hoveredData && fmt(hoveredData["83.3%"])}
+                  83.3%: {hoveredData && fmt(hoveredData['83.3%'])}
                 </span>
               </p>
               <p className="f2-clscc">
@@ -314,12 +250,12 @@ export class Fig2Options extends React.Component<ParamProps, ParamState> {
   hoverCountry = (hoveredName: string, hoveredData: {}) => {
     this.setState({
       hoveredName,
-      hoveredData
+      hoveredData,
     });
   };
 }
 
-const fmt = val => typeof val === "number" && Math.floor(val * 1000) / 1000;
+const fmt = val => typeof val === 'number' && Math.floor(val * 1000) / 1000;
 
 export default Figure2;
 

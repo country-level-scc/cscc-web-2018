@@ -62,7 +62,7 @@ h1 {
   border-top: 1px solid black;
 }
 .param-picker-descs {
-  color: #666;
+  color: #888;
   display: flex;
 }
 .param-picker-descs abbr {

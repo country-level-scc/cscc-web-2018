@@ -76,7 +76,7 @@ export default class ParameterPicker extends React.Component<
               Representative Concentration Pathway
             </div>
             <div>
-              <abbr title="shared socioeconomic pathway scenarios">Damage Model</abbr>
+              Damage Model
             </div>
             <div>
               Discounting<br /> {this.state.discounting === 'fixed' && <React.Fragment>Pure rate of time preference of 2% per year and an
