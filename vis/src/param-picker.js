@@ -70,16 +70,19 @@ export default class ParameterPicker extends React.Component<
           </div>
           <div className="param-picker-descs">
             <div>
-              shared socioeconomic pathway scenarios
+              Socioeconomic Scenario <br />
+              Shared Socioeconomic Pathway (SSPs)
             </div>
             <div>
-              Representative Concentration Pathway
+              Emissions Scenario<br />
+              Representative Concentration Pathway (RCPs)
+
             </div>
             <div>
               Damage Model
             </div>
             <div>
-              Discounting<br /> {this.state.discounting === 'fixed' && <React.Fragment>Pure rate of time preference of 2% per year and an
+              Discounting Scheme<br /> {this.state.discounting === 'fixed' && <React.Fragment>Pure rate of time preference of 2% per year and an
 206 inter-temporal elasticity of substitution of 1.5</React.Fragment>}
             </div>
 

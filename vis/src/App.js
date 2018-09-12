@@ -32,7 +32,7 @@ class App extends Component {
             className={page === 'cscc' ? 'activeNavButton' : undefined}
             onClick={() => this.setState({page: 'cscc'})}
           >
-            Country-level social costs of carbon
+            Country-level social cost of carbon
           </button>
         </div>
 
