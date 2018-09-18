@@ -71,7 +71,7 @@ h1 {
 }
 
 .tickLabel {
-  font-size: 5px;
+  font-size: 10px;
 }
 .scc line {
   transition: all 160ms ease;
@@ -107,13 +107,16 @@ h1 {
  {opacity: 1;}
 
 .fig1-attr {
-  font: 10px helvetica;
+  font: 12px helvetica;
   font-style: italic;
 }
 
 .fig1-major-y-label {
   white-space: normal;
   width: 50px;
+}
+.rcpLabel {
+  font-size: 10px;
 }
 
 @keyframes pulse {

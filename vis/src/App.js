@@ -12,7 +12,7 @@ import './App.css';
 class App extends Component {
   state = {
     selectedCountry: 'WLD',
-    page: 'winners',
+    page: 'cscc',
   };
 
   render() {
@@ -95,7 +95,8 @@ class App extends Component {
                 this.setState({selectedCountry})
               }
               width={800}
-              height={640}
+              height={540}
+              paddingY={20}
             />
           </React.Fragment>
         )}

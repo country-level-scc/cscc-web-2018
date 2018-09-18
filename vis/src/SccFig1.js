@@ -39,13 +39,13 @@ const dataForParams = (data: Array<CSVRow>, ssp: SSP, rcp: RCP) =>
       {}
     );
 
-const Scales = ({ min, max, scaler, slices = 5 }) => {
-  const sliceWidth = Math.floor((max - min) / slices);
-  const ticks = _range(Math.floor(min), Math.ceil(max), sliceWidth);
+const Scales = ({ minX, maxX, scaler, height, slices = 5 }) => {
+  const sliceWidth = Math.floor((maxX - minX) / slices);
+  const ticks = _range(Math.floor(minX), Math.ceil(maxX), sliceWidth);
   return (
     <g>
-      <line x1={1} x2={1} y1={0} y2={290} stroke="#aaa" />
-      <line y1={290} y2={290} stroke="#aaa" x1={1} x2={scaler(max)} />
+      <line x1={1} x2={1} y1={0} y2={height} stroke="#aaa" />
+      <line y1={height} y2={height} stroke="#aaa" x1={1} x2={scaler(maxX)} />
       {ticks.map((t, idx) => (
         <Motion
           key={idx}
@@ -57,17 +57,17 @@ const Scales = ({ min, max, scaler, slices = 5 }) => {
               <line
                 x1={values.x}
                 x2={values.x}
-                y1={287}
-                y2={290}
+                y1={height-3}
+                y2={height}
                 stroke="#aaa"
               />
               <text
                 className="tickLabel"
                 x={values.x}
-                y={295}
+                y={height+10}
                 textAnchor="middle"
               >
-                {t}
+                {Number(t).toLocaleString()}
               </text>
             </React.Fragment>
           )}
@@ -114,38 +114,42 @@ class SCCFigure extends React.Component<Fig1Props> {
     height: 300,
   }
   render() {
-    const { country, data, clamp, width, height } = this.props;
+    const { country, data, clamp, width, height, paddingY=35 } = this.props;
     const { min, max } = minMax(data);
     const inferred = inferredClamp(data);
     const maxActual = clamp !== undefined ? clamp : Math.min(inferred, max);
 
+    const paddingLeft = 200
     const scaler = scaleLinear()
       .clamp(true) // clamp b/c values may be negative
       .domain([min, maxActual])
-      .range([10, width - 20]);
+      .range([10, width - paddingLeft-5]);
+
+    const rowHeight = (height - (SSPS.length - 1) * paddingY) / SSPS.length;
+    const rowOffest = rowHeight + paddingY;
 
     return (
-      <svg viewBox={`-100 -5 ${width+100} ${height+20}`} width={width} height={height}>
-        {SSPS.map(({ label, value: ssp }, i) => {
-          const startY = i * 60;
+      <svg viewBox={`-${paddingLeft} -5 ${width+100} ${height+30}`} width={width} height={height}>
+        {SSPS.map(({ value: ssp }, i) => {
+          const startY = i * rowOffest;
           return (
             <g key={ssp} transform={`translate(0,${startY})`}>
-              <DamageGroup ssp={ssp} data={data} scaler={scaler} />
+              <DamageGroup ssp={ssp} data={data} scaler={scaler} height={rowHeight} />
               <text
                 className="fig1-major-y-label"
-                y={8}
-                x={-20}
+                y={rowHeight / 2 - 9}
+                x={-50}
                 textAnchor="end"
-                style={{ fontSize: 6, width: 40, whiteSpace: "wrap" }}
+                style={{ fontSize: 14, width: 40 }}
               >
-                {label}
+                {sspLabels[ssp]}
               </text>
             </g>
           );
         })}
-        <Scales min={min} max={maxActual} scaler={scaler} />
+        <Scales minX={min} maxX={maxActual} height={height} scaler={scaler} />
 
-        <text className="fig1-attr" x={400} y={310} textAnchor="end">
+        <text className="fig1-attr" x={width-paddingLeft} y={height+40} textAnchor="end">
           Ricke et al. Country-level social cost of carbon. (2018).
         </text>
       </svg>
@@ -153,13 +157,32 @@ class SCCFigure extends React.Component<Fig1Props> {
   }
 }
 
+const sspLabels = {
+  SSP1: 'Sustainability',
+  SSP2: <React.Fragment>
+    <tspan textAnchor='end' x={-50} y='1em'>Middle</tspan>
+    <tspan textAnchor='end' x={-50} dy='1.3em'>of the</tspan>
+    <tspan textAnchor='end' x={-50} dy='1.3em'>Road</tspan>
+  </React.Fragment>,
+  SSP3: <React.Fragment>
+    <tspan textAnchor='end' x={-50}>Regional</tspan>
+    <tspan textAnchor='end' x={-50} dy='1.3em'>Rivalry</tspan>
+  </React.Fragment>,
+  SSP4: 'Inequality',
+  SSP5: <React.Fragment>
+    <tspan textAnchor='end' x={-50}>Fossil-fueled</tspan>
+    <tspan textAnchor='end' x={-50} dy='1.3em'>Development</tspan>
+  </React.Fragment>,
+}
+
 export default SCCFigure;
 
-const DamageGroup = ({ ssp, data, scaler }) => {
+const DamageGroup = ({ ssp, data, scaler, height }) => {
+  const rcpRowHeight = height / RCPS.length;
   return RCPS.map(({ value: rcp, label }, j) => (
     <g
       key={rcp}
-      transform={`translate(0,${j * 15})`}
+      transform={`translate(0,${j * rcpRowHeight})`}
       // onMouseEnter={() => console.log({ rcp, ssp })}
       className={[rcp, ssp, "scc"].join(" ")}
     >
@@ -168,13 +191,14 @@ const DamageGroup = ({ ssp, data, scaler }) => {
         ssp={ssp}
         data={dataForParams(data, ssp, rcp)}
         scaler={scaler}
+        height={rcpRowHeight}
       />
       <text
         x={-2}
         y={4}
         textAnchor="end"
         strokeWidth={0}
-        style={{ fontSize: 4 }}
+        className="rcpLabel"
       >
         {label}
       </text>
@@ -191,7 +215,7 @@ type Props = {
 };
 class DamageFigure extends React.Component<Props> {
   render() {
-    const { rcp, data, ssp, scaler } = this.props;
+    const { rcp, data, ssp, scaler, height } = this.props;
     const damage_functions = [
       "bhm_sr",
       "bhm_richpoor_sr",
@@ -199,6 +223,8 @@ class DamageFigure extends React.Component<Props> {
       "bhm_richpoor_lr",
       "djo"
     ];
+
+    const dmg_height = height / damage_functions.length;
 
     return damage_functions.map((fn, idx) => {
       const row = data[fn] || { "16.7%": 0, "83.3%": 0, "50%": 0 };
@@ -220,14 +246,14 @@ class DamageFigure extends React.Component<Props> {
                   className={fn}
                   x1={value.x1}
                   x2={value.x2}
-                  y1={idx * 2}
-                  y2={idx * 2}
+                  y1={idx * dmg_height}
+                  y2={idx * dmg_height}
                 />
 
                 {x1 - x2 !== 0 && (
                   <circle
                     cx={value.median || 0}
-                    cy={idx * 2}
+                    cy={idx * dmg_height}
                     r={1}
                     className={fn}
                   />
@@ -238,66 +264,6 @@ class DamageFigure extends React.Component<Props> {
         </React.Fragment>
       );
     });
-  }
-}
-
-type CSVFig1Props = {
-  country: string,
-  csvPath?: string,
-  children: React.Node<*>
-};
-
-type CSVFig1State = {
-  data: Array<CSVRow>,
-  loading: boolean
-};
-class CSVFig1Loader extends React.PureComponent<CSVFig1Props, CSVFig1State> {
-  state = {
-    data: [],
-    loading: false
-  };
-  static defaultProps = {
-    csvPath: `${process.env.PUBLIC_URL}/cscc_v1.csv`,
-    country: "WLD"
-  };
-
-  fetchData = () => {
-    const data = [];
-    const { country } = this.props;
-    const test = row =>
-      row.ISO3 === country && row.eta === "1p5" && row.prtp === "2";
-    this.setState({ loading: true });
-    Papa.parse(this.props.csvPath, {
-      download: true,
-      header: true,
-      dynamicTyping: name => ["16.7%", "50%", "83.3%"].includes(name),
-      step: (results, parser) => {
-        const row = results.data[0];
-        // console.log(row.ISO3, this.props.country)
-        if (test(row)) {
-          data.push(row);
-        }
-      },
-      complete: () => {
-        this.setState({ data, loading: false });
-      }
-    });
-  };
-
-  componentDidMount() {
-    this.fetchData();
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.country !== this.props.country) {
-      this.fetchData();
-    }
-  }
-
-  render() {
-    const { data, loading } = this.state;
-
-    return this.props.children({ data, loading });
   }
 }
 
@@ -325,7 +291,7 @@ export class Fig1Options extends React.Component<F1Props, F1State> {
             </option>
           ))}
         </select>
-        <button onClick={() => this.props.onCountryChange("WLD")}>  
+        <button onClick={() => this.props.onCountryChange("WLD")}>
           reset to world
         </button>
         </div>
