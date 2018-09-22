@@ -7,6 +7,7 @@ type CSVLoaderProps<Row> = {
   test: (row: Row) => boolean,
   dynamicTyping: (columnName: string) => boolean,
   csvPath: string,
+  onChange?: (state: CSVLoaderState<*>) => any,
   children: ({data: Array<Row>, loading: boolean}) => React.Node
 };
 
@@ -28,11 +29,12 @@ class CSVLoader<Row, Out> extends React.PureComponent<
     csvPath: `${process.env.PUBLIC_URL || ''}/cscc_v1.csv`,
     dynamicTyping: (name: string) => ["16.7%", "50%", "83.3%"].includes(name),
     test: (row: Row) => true,
+    onChange: () => {},
   };
 
   fetchData = () => {
     const data = [];
-    this.setState({ loading: true });
+    this.setState ({ loading: true }, () => this.props.onChange(this.state));
     Papa.parse(this.props.csvPath, {
       download: true,
       header: true,
@@ -44,10 +46,15 @@ class CSVLoader<Row, Out> extends React.PureComponent<
         }
       },
       complete: () => {
-        this.setState({ data, loading: false });
+        this.setState({ data, loading: false }, () => this.props.onChange(this.state));
       }
     });
   };
+
+  getData = () => {
+    const {data, loading} = this.state;
+    return {data, loading};
+  }
 
   componentDidMount() {
     this.fetchData();
@@ -65,7 +72,7 @@ class CSVLoader<Row, Out> extends React.PureComponent<
   render() {
     const { data, loading } = this.state;
 
-    return this.props.children({ data, loading });
+    return this.props.children ? this.props.children({ data, loading }) : null;
   }
 }
 

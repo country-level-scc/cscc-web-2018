@@ -1,11 +1,13 @@
 // @flow
 import React, {Component} from 'react';
+import ReactDOMServer from 'react-dom/server';
 
 import {Fig1Options} from './SccFig1';
 import {Fig2Options} from './SccFig2';
 import {Fig4DataLoader, CsccFig4} from './SccFig4.js';
 import {RCPS, DMGS, SSPS} from './constants';
 import ParameterPicker from './param-picker';
+import {saveAs} from 'file-saver';
 
 import './App.css';
 
@@ -42,7 +44,7 @@ class App extends Component {
               {({state}) => (
                 <React.Fragment>
                   <div style={{display: 'flex', marginBottom: 60}}>
-                    <Fig4DataLoader {...state}>
+                    <Fig4DataLoader {...state} ref={el => this.bigFig4 = el}>
                       {({data}) => <CsccFig4 data={data} />}
                     </Fig4DataLoader>
                     <div style={{marginRight: 60}} />
@@ -61,6 +63,15 @@ class App extends Component {
                       )}
                     </Fig4DataLoader>
                   </div>
+                  <button onClick={() => {
+                    if (this.bigFig4) {
+                      const data = this.bigFig4.getData();
+                      console.log({data})
+                      const svgText = ReactDOMServer.renderToStaticMarkup(<CsccFig4 data={data}/>);
+                      const blob = new Blob([`<?xml version="1.0" encoding="UTF-8" ?>${svgText}`], {type:"image/svg+xml;charset=utf-8"})
+                      saveAs(blob, 'figure4-ricke-et-al.svg')
+                    }
+                  }}>download figure</button>
                   <p className="caption">
                     Country-level shares of global SSC (i.e., CSCC/GSCC) versus
                     shares of 2013 CO2 emissions. CSCC is the median estimate

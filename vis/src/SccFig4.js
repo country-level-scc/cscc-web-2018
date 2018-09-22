@@ -92,7 +92,7 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
       'GBR',
     ];
     const worldCsccData = csccData.find(r => r.ISO3 === 'WLD');
-    const worldData = wbData.find(r => r['Country Code'] === 'WLD');
+    // const worldData = wbData.find(r => r['Country Code'] === 'WLD');
 
     if (!worldCsccData) {
       return;
@@ -122,8 +122,55 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
     };
   }
 
+  getAllData(csccData, wbData) {
+    const worldCsccData = csccData.find(r => r.ISO3 === 'WLD');
+    const totalCscc = worldCsccData ? worldCsccData['50%'] : 1;
+
+    return csccData
+      .map(row => {
+        const worldBankData = wbData.find(r => r['Country Code'] === row.ISO3);
+        if (worldBankData) {
+          // Country Name,Country Code,2017 GDP,2017 Population,2014 Emissions,Emissions Share
+          return {
+            sccPerCapita: worldBankData['2017 Population']
+              ? 1000000 * row['50%'] / worldBankData['2017 Population']
+              : 0,
+            logGdp:
+              worldBankData['2017 GDP'] > 0
+                ? Math.log10(worldBankData['2017 GDP'])
+                : 0,
+            gdp: worldBankData['2017 GDP'],
+            shareEmissions: 100 * worldBankData['Emissions Share'],
+            shareScc: 100 * row['50%'] / totalCscc,
+            ISO3: row.ISO3, // extras:
+            label: worldBankData['Country Name'],
+          };
+        } else {
+          console.warn(`no matching data for ${row.ISO3}`);
+          return row;
+        }
+      })
+      .filter(row => this.props.countriesToPlot.includes(row.ISO3));
+  }
+
+  dataToRender(csccData, wbData) {
+    const euData = this.getEuData(csccData, wbData);
+    const allData = this.getAllData(csccData, wbData);
+    return euData ? [...allData, euData] : allData;
+  }
+
+  state={
+    csccData: [],
+    csccLoading: true,
+    wbData: [],
+    wbLoading: true,
+  };
+
+  getData = () => {
+    return this.dataToRender(this.state.csccData, this.state.wbData);
+  }
+
   render() {
-    const {width, height} = this.props;
     const {dmg, rcp, ssp} = this.props;
     const csvPath = `rcp_${rcp}_dmg_${dmg}_ssp_${ssp}.csv`;
     const test =
@@ -131,62 +178,22 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
         ? Fig4DataLoader.fixedDiscounting
         : Fig4DataLoader.growthAdjustedDiscounting;
 
+    const data = this.getData();
+
     return (
-      <CSVLoader
-        test={test}
-        csvPath={`${process.env.PUBLIC_URL || ''}/${csvPath}`}
-      >
-        {({data: csccData, loading: csccLoading}) => (
-          <CSVLoader
-            dynamicTyping={col => !col.includes('Country')}
-            csvPath={`${process.env.PUBLIC_URL || ''}/gdp_pop_co2e.csv`}
-          >
-            {({data: wbData, loading: pgLoading}) => {
-              const worldCsccData = csccData.find(r => r.ISO3 === 'WLD');
-              const worldData = wbData.find(r => r['Country Code'] === 'WLD');
-
-              const euData = this.getEuData(csccData, wbData);
-
-              const totalCscc = worldCsccData ? worldCsccData['50%'] : 1;
-              const allData = csccData
-                .map(row => {
-                  const worldBankData = wbData.find(
-                    r => r['Country Code'] === row.ISO3,
-                  );
-                  if (worldBankData) {
-                    // Country Name,Country Code,2017 GDP,2017 Population,2014 Emissions,Emissions Share
-                    return {
-                      sccPerCapita: worldBankData['2017 Population']
-                        ? 1000000 *
-                          row['50%'] /
-                          worldBankData['2017 Population']
-                        : 0,
-                      logGdp:
-                        worldBankData['2017 GDP'] > 0
-                          ? Math.log10(worldBankData['2017 GDP'])
-                          : 0,
-                      gdp: worldBankData['2017 GDP'],
-                      shareEmissions: 100 * worldBankData['Emissions Share'],
-                      shareScc: 100 * row['50%'] / totalCscc,
-                      ISO3: row.ISO3, // extras:
-                      label: worldBankData['Country Name'],
-                    };
-                  } else {
-                    console.warn(`no matching data for ${row.ISO3}`);
-                    return row;
-                  }
-                })
-                .filter(row => this.props.countriesToPlot.includes(row.ISO3));
-
-              return this.props.children
-                ? this.props.children({
-                    data: euData ? [...allData, euData] : allData,
-                  })
-                : null;
-            }}
-          </CSVLoader>
-        )}
-      </CSVLoader>
+      <React.Fragment>
+        <CSVLoader
+          test={test}
+          csvPath={`${process.env.PUBLIC_URL || ''}/${csvPath}`}
+          onChange={({data, loading}) => this.setState({csccData: data, csccLoading: loading})}
+        />
+        <CSVLoader
+              dynamicTyping={col => !col.includes('Country')}
+              csvPath={`${process.env.PUBLIC_URL || ''}/gdp_pop_co2e.csv`}
+              onChange={({data, loading}) => this.setState({wbData: data, wbLoading: loading})}
+        />
+        {this.props.children({data})}
+      </React.Fragment>
     );
   }
 }
@@ -200,7 +207,7 @@ export class CsccFig4 extends React.Component<*, *> {
     domainY: [-6, 23],
     xAxis: [0, 10, 20, 30],
     yAxis: [-30, -25, -20, -15, -10, -5, 0, 5, 10, 15, 20, 25, 30, 35],
-    labelCountries: ['USA', 'CHN', 'IND', 'EUC'],
+    labelCountries: ['USA', 'CHN', 'IND', 'EUC', 'RUS', 'MEX', 'SAU', 'BRA', 'CAN', 'JPN'],
     clip: false,
     padding: {x: 20, y: 10},
   };
@@ -245,7 +252,7 @@ export class CsccFig4 extends React.Component<*, *> {
       .clamp(true);
 
     return (
-      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg">
         <Fig4Axes
           domainX={domainX}
           domainY={domainY}
@@ -361,7 +368,15 @@ const Fig4Axes = ({
                 stroke="#ddd"
                 strokeWidth={1}
               />
-              <text x={scaleX(0)-16} y={values.y + 2} fontSize={10} color="#666" textAnchor='end'>{y}</text>
+              <text
+                x={scaleX(0) - 16}
+                y={values.y + 2}
+                fontSize={10}
+                color="#666"
+                textAnchor="end"
+              >
+                {y}
+              </text>
             </React.Fragment>
           )}
         </Motion>
