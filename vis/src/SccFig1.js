@@ -42,11 +42,10 @@ const dataForParams = (data: Array<CSVRow>, ssp: SSP, rcp: RCP) =>
 const Scales = ({minX, maxX, scaler, height, slices = 5}) => {
   const sliceWidth = Math.floor((maxX - minX) / slices);
   let ticks = _range(Math.floor(minX), Math.ceil(maxX), sliceWidth);
-  console.log({ticks})
+
   if (Math.floor(minX) < 0) {
     ticks.push(0)
     ticks = ticks.sort((a, b) => a-b)
-    console.log({ticksAfter: ticks})
   }
   return (
     <g>

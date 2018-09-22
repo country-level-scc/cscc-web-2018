@@ -1,174 +1,175 @@
 // @flow
 
-import * as React from "react";
-import { scaleLinear, scaleDiverging, scaleLog } from "d3-scale";
-import { interpolateRdBu } from "d3-scale-chromatic";
-import { Motion, spring } from "react-motion";
+import * as React from 'react';
+import {scaleLinear, scaleDiverging, scaleLog} from 'd3-scale';
+import {interpolateRdBu} from 'd3-scale-chromatic';
+import {Motion, spring} from 'react-motion';
 
-import CSVLoader from "./csv-loader.js";
+import CSVLoader from './csv-loader.js';
 
 export class Fig4DataLoader extends React.PureComponent<*, *> {
   static defaultProps = {
-    ssp: "SSP2",
-    rcp: "rcp60",
-    dmg: "bhm_sr",
-    discounting: "fixed",
+    ssp: 'SSP2',
+    rcp: 'rcp60',
+    dmg: 'bhm_sr',
+    discounting: 'fixed',
     countriesToPlot: [
-      "ARG",
-      "AUS",
-      "BRA",
-      "CAN",
-      "CHN",
-      "DEU",
-      "FRA",
-      "GBR",
-      "IDN",
-      "IND",
-      "ITA",
-      "JPN",
-      "KOR",
-      "MEX",
-      "RUS",
-      "SAU",
-      "TUR",
-      "USA",
-      "ZAF"
-    ]
+      'ARG',
+      'AUS',
+      'BRA',
+      'CAN',
+      'CHN',
+      'DEU',
+      'FRA',
+      'GBR',
+      'IDN',
+      'IND',
+      'ITA',
+      'JPN',
+      'KOR',
+      'MEX',
+      'RUS',
+      'SAU',
+      'TUR',
+      'USA',
+      'ZAF',
+    ],
   };
 
-  static growthAdjustedDiscounting(row: { prtp: string }) {
+  static growthAdjustedDiscounting(row: {prtp: string}) {
     return (
-      row.prtp !== "2" &&
-      row.dmgfuncpar === "bootstrap" &&
-      row.climate === "uncertain"
+      row.prtp !== '2' &&
+      row.dmgfuncpar === 'bootstrap' &&
+      row.climate === 'uncertain'
     );
   }
 
-  static fixedDiscounting(row: { prtp: string }) {
+  static fixedDiscounting(row: {prtp: string}) {
     return (
-      row.prtp === "2" &&
-      row.dmgfuncpar === "bootstrap" &&
-      row.climate === "uncertain"
+      row.prtp === '2' &&
+      row.dmgfuncpar === 'bootstrap' &&
+      row.climate === 'uncertain'
     );
   }
 
   basicFilter(row: *) {
     return (
-      row.prtp === "2" &&
-      row.dmgfuncpar === "bootstrap" &&
-      row.climate === "uncertain"
+      row.prtp === '2' &&
+      row.dmgfuncpar === 'bootstrap' &&
+      row.climate === 'uncertain'
     );
   }
 
   getEuData(csccData, wbData) {
     const euCountries = [
-      "AUT",
-      "BEL",
-      "BGR",
-      "HRV",
-      "CYP",
-      "CZE",
-      "DNK",
-      "EST",
-      "FIN",
-      "FRA",
-      "DEU",
-      "GRC",
-      "HUN",
-      "IRL",
-      "ITA",
-      "LVA",
-      "LTU",
-      "LUX",
-      "MLT",
-      "NLD",
-      "POL",
-      "PRT",
-      "ROU",
-      "SVK",
-      "SVN",
-      "ESP",
-      "SWE",
-      "GBR"
+      'AUT',
+      'BEL',
+      'BGR',
+      'HRV',
+      'CYP',
+      'CZE',
+      'DNK',
+      'EST',
+      'FIN',
+      'FRA',
+      'DEU',
+      'GRC',
+      'HUN',
+      'IRL',
+      'ITA',
+      'LVA',
+      'LTU',
+      'LUX',
+      'MLT',
+      'NLD',
+      'POL',
+      'PRT',
+      'ROU',
+      'SVK',
+      'SVN',
+      'ESP',
+      'SWE',
+      'GBR',
     ];
-    const worldCsccData = csccData.find(r => r.ISO3 === "WLD");
-    const worldData = wbData.find(r => r["Country Code"] === "WLD");
+    const worldCsccData = csccData.find(r => r.ISO3 === 'WLD');
+    const worldData = wbData.find(r => r['Country Code'] === 'WLD');
 
     if (!worldCsccData) {
       return;
     }
 
-    const wbEu = wbData.filter(r => euCountries.includes(r["Country Code"]));
+    const wbEu = wbData.filter(r => euCountries.includes(r['Country Code']));
     const csccEu = csccData.filter(r => euCountries.includes(r.ISO3));
 
     const euCo2eShare = wbEu.reduce(
-      (acc, curr) => acc + curr["Emissions Share"],
-      0
+      (acc, curr) => acc + curr['Emissions Share'],
+      0,
     );
-    const euPop = wbEu.reduce((acc, curr) => acc + curr["2017 Population"], 0);
-    const euGdp = wbEu.reduce((acc, curr) => acc + curr["2017 GDP"], 0);
-    const euScc = csccEu.reduce((acc, curr) => acc + curr["50%"], 0);
-    const euSccPerCapita = (1000000 * euScc) / euPop;
+    const euPop = wbEu.reduce((acc, curr) => acc + curr['2017 Population'], 0);
+    const euGdp = wbEu.reduce((acc, curr) => acc + curr['2017 GDP'], 0);
+    const euScc = csccEu.reduce((acc, curr) => acc + curr['50%'], 0);
+    const euSccPerCapita = 1000000 * euScc / euPop;
     const euLogGdp = Math.log10(euGdp);
     return {
       sccPerCapita: euSccPerCapita,
       logGdp: euLogGdp,
       gdp: euGdp,
       shareEmissions: 100 * euCo2eShare,
-      shareScc: (100 * euScc) / worldCsccData["50%"],
-      ISO3: "EUC",
-      label: "EU",
-      population: euPop
+      shareScc: 100 * euScc / worldCsccData['50%'],
+      ISO3: 'EUC',
+      label: 'EU',
+      population: euPop,
     };
   }
 
   render() {
-    const { width, height } = this.props;
-    const { dmg, rcp, ssp } = this.props;
+    const {width, height} = this.props;
+    const {dmg, rcp, ssp} = this.props;
     const csvPath = `rcp_${rcp}_dmg_${dmg}_ssp_${ssp}.csv`;
     const test =
-      this.props.discounting === "fixed"
+      this.props.discounting === 'fixed'
         ? Fig4DataLoader.fixedDiscounting
         : Fig4DataLoader.growthAdjustedDiscounting;
 
     return (
       <CSVLoader
         test={test}
-        csvPath={`${process.env.PUBLIC_URL || ""}/${csvPath}`}
+        csvPath={`${process.env.PUBLIC_URL || ''}/${csvPath}`}
       >
-        {({ data: csccData, loading: csccLoading }) => (
+        {({data: csccData, loading: csccLoading}) => (
           <CSVLoader
-            dynamicTyping={col => !col.includes("Country")}
-            csvPath={`${process.env.PUBLIC_URL || ""}/gdp_pop_co2e.csv`}
+            dynamicTyping={col => !col.includes('Country')}
+            csvPath={`${process.env.PUBLIC_URL || ''}/gdp_pop_co2e.csv`}
           >
-            {({ data: wbData, loading: pgLoading }) => {
-              const worldCsccData = csccData.find(r => r.ISO3 === "WLD");
-              const worldData = wbData.find(r => r["Country Code"] === "WLD");
+            {({data: wbData, loading: pgLoading}) => {
+              const worldCsccData = csccData.find(r => r.ISO3 === 'WLD');
+              const worldData = wbData.find(r => r['Country Code'] === 'WLD');
 
               const euData = this.getEuData(csccData, wbData);
 
-              const totalCscc = worldCsccData ? worldCsccData["50%"] : 1;
+              const totalCscc = worldCsccData ? worldCsccData['50%'] : 1;
               const allData = csccData
                 .map(row => {
                   const worldBankData = wbData.find(
-                    r => r["Country Code"] === row.ISO3
+                    r => r['Country Code'] === row.ISO3,
                   );
                   if (worldBankData) {
                     // Country Name,Country Code,2017 GDP,2017 Population,2014 Emissions,Emissions Share
                     return {
-                      sccPerCapita: worldBankData["2017 Population"]
-                        ? (1000000 * row["50%"]) /
-                          worldBankData["2017 Population"]
+                      sccPerCapita: worldBankData['2017 Population']
+                        ? 1000000 *
+                          row['50%'] /
+                          worldBankData['2017 Population']
                         : 0,
                       logGdp:
-                        worldBankData["2017 GDP"] > 0
-                          ? Math.log10(worldBankData["2017 GDP"])
+                        worldBankData['2017 GDP'] > 0
+                          ? Math.log10(worldBankData['2017 GDP'])
                           : 0,
-                      gdp: worldBankData["2017 GDP"],
-                      shareEmissions: 100 * worldBankData["Emissions Share"],
-                      shareScc: (100 * row["50%"]) / totalCscc,
+                      gdp: worldBankData['2017 GDP'],
+                      shareEmissions: 100 * worldBankData['Emissions Share'],
+                      shareScc: 100 * row['50%'] / totalCscc,
                       ISO3: row.ISO3, // extras:
-                      label: worldBankData["Country Name"]
+                      label: worldBankData['Country Name'],
                     };
                   } else {
                     console.warn(`no matching data for ${row.ISO3}`);
@@ -179,7 +180,7 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
 
               return this.props.children
                 ? this.props.children({
-                    data: euData ? [...allData, euData] : allData
+                    data: euData ? [...allData, euData] : allData,
                   })
                 : null;
             }}
@@ -198,9 +199,10 @@ export class CsccFig4 extends React.Component<*, *> {
     domainX: [-1, 32],
     domainY: [-6, 23],
     xAxis: [0, 10, 20, 30],
-    yAxis: [-5, 0, 5, 10, 15, 20, 25, 30, 35],
-    labelCountries: ["USA", "CHN", "IND", "EUC"],
+    yAxis: [-30, -25, -20, -15, -10, -5, 0, 5, 10, 15, 20, 25, 30, 35],
+    labelCountries: ['USA', 'CHN', 'IND', 'EUC'],
     clip: false,
+    padding: {x: 20, y: 10},
   };
 
   render() {
@@ -209,7 +211,8 @@ export class CsccFig4 extends React.Component<*, *> {
       width,
       height,
       domainX,
-      domainY: initialDomainY
+      domainY: initialDomainY,
+      padding,
     } = this.props;
     const gdps = data.map(r => r.gdp);
     const gdpDomain =
@@ -222,20 +225,20 @@ export class CsccFig4 extends React.Component<*, *> {
     // both input domain and ranges are specified as in paper
     const scaleX = scaleLinear()
       .domain(domainX)
-      .range([0, width]);
+      .range([padding.x, width - 1]);
 
     const shareSccs = data.length > 0 ? data.map(r => r.shareScc) : [-5, 25];
     // y axis is shareScc
     // width is logGdp
     // const maxGdp = gdps.length > 0 ? Math.log10(Math.max(...gdps)) : 0;
-    const maxGdp= 4
+    const maxGdp = 4;
     const domainY =
       width > 399
         ? [Math.min(...shareSccs) - maxGdp, Math.max(...shareSccs) + maxGdp]
         : initialDomainY;
     const scaleY = scaleLinear() // invert axes
       .domain(domainY)
-      .range([height, 0]);
+      .range([height - padding.y, 1]);
 
     const color = scaleDiverging(interpolateRdBu)
       .domain([-0.15, 0, 0.23])
@@ -250,11 +253,14 @@ export class CsccFig4 extends React.Component<*, *> {
           scaleY={scaleY.clamp(true)}
           xAxis={this.props.xAxis}
           yAxis={this.props.yAxis}
+          padding={padding}
         />
         {data
           .filter(row => {
             // could use this to clip data if clip prop specified
-            return this.props.clip ? row.shareEmissions <= domainX[1] && row.shareScc <= domainY[1] : true;
+            return this.props.clip
+              ? row.shareEmissions <= domainX[1] && row.shareScc <= domainY[1]
+              : true;
           })
           .map(row => {
             return (
@@ -265,14 +271,14 @@ export class CsccFig4 extends React.Component<*, *> {
                   y: scaleY(0),
                   r: 0,
                   capita: 0,
-                  textY: scaleY(0)
+                  textY: scaleY(0),
                 }}
                 style={{
                   x: spring(scaleX(row.shareEmissions)),
                   y: spring(scaleY(row.shareScc)),
                   capita: spring(-0.75 * row.sccPerCapita),
                   r: spring(scaleR(row.gdp) / 2),
-                  textY: spring(scaleY(row.shareScc) + scaleR(row.gdp) * 0.95)
+                  textY: spring(scaleY(row.shareScc) + scaleR(row.gdp) * 0.95),
                 }}
               >
                 {values => (
@@ -291,7 +297,7 @@ export class CsccFig4 extends React.Component<*, *> {
                     />
                     {this.props.labelCountries.includes(row.ISO3) && (
                       <text
-                        style={{ fontSize: 12 }}
+                        style={{fontSize: 12}}
                         x={scaleX(row.shareEmissions)}
                         y={values.y + scaleR(row.gdp) * 0.75}
                       >
@@ -308,7 +314,15 @@ export class CsccFig4 extends React.Component<*, *> {
   }
 }
 
-const Fig4Axes = ({ xAxis, yAxis, domainX, domainY, scaleX, scaleY }) => {
+const Fig4Axes = ({
+  xAxis,
+  yAxis,
+  domainX,
+  domainY,
+  scaleX,
+  scaleY,
+  padding,
+}) => {
   return (
     <g>
       <rect
@@ -325,25 +339,32 @@ const Fig4Axes = ({ xAxis, yAxis, domainX, domainY, scaleX, scaleY }) => {
           key={`xAxisAt${x}`}
           x1={scaleX(x)}
           x2={scaleX(x)}
-          y1={scaleY(40)}
-          y2={scaleY(-20)}
+          y1={scaleY(45)}
+          y2={scaleY(-40)}
           stroke="#ddd"
           strokeWidth={1}
         />
       ))}
-      {yAxis.map(y => (
+      {yAxis.filter(y => y >= domainY[0] && y <= domainY[1]).map(y => (
         <Motion
           key={`xAxisAt${y}`}
           defaultStyle={{y: scaleY(y) || 0}}
           style={{y: spring(scaleY(y))}}
-        >{(values) => <line
-          x1={scaleX(-20)}
-          x2={scaleX(40)}
-          y1={values.y}
-          y2={values.y}
-          stroke="#ddd"
-          strokeWidth={1}
-        />}</Motion>
+        >
+          {values => (
+            <React.Fragment>
+              <line
+                x1={scaleX(-20) - 4}
+                x2={scaleX(40)}
+                y1={values.y}
+                y2={values.y}
+                stroke="#ddd"
+                strokeWidth={1}
+              />
+              <text x={scaleX(0)-16} y={values.y + 2} fontSize={10} color="#666" textAnchor='end'>{y}</text>
+            </React.Fragment>
+          )}
+        </Motion>
       ))}
       <SlopeLines
         domainX={domainX}
@@ -359,14 +380,14 @@ const Fig4Axes = ({ xAxis, yAxis, domainX, domainY, scaleX, scaleY }) => {
           [1, -4],
           [1, -2],
           [1, -1],
-          [2, -1]
+          [2, -1],
         ]}
       />
     </g>
   );
 };
 
-const SlopeLines = ({ scaleX, scaleY, domainX, domainY, slopes }) => (
+const SlopeLines = ({scaleX, scaleY, domainX, domainY, slopes}) => (
   <React.Fragment>
     {slopes.map(([y, x]) => {
       const m = y / x;
@@ -381,7 +402,7 @@ const SlopeLines = ({ scaleX, scaleY, domainX, domainY, slopes }) => (
           x2={scaleX(xInt)}
           y2={scaleY(yInt)}
           strokeWidth={1}
-          stroke={x === y ? "#aaa" : "#eee"}
+          stroke={x === y ? '#aaa' : '#eee'}
         />
       );
     })}
