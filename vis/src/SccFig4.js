@@ -267,18 +267,18 @@ export class CsccFig4 extends React.Component<*, *> {
               <Motion
                 key={row.ISO3}
                 defaultStyle={{
-                  x: scaleX(0),
-                  y: scaleY(0),
-                  r: 0,
-                  capita: 0,
-                  textY: scaleY(0),
+                  x: scaleX(row.shareEmissions || 0),
+                  y: scaleY(row.shareScc || 0),
+                  r: scaleR(row.gdp || 0) / 2,
+                  capita: -0.75 * row.sccPerCapita || 0,
+                  textY: scaleY(row.shareScc || 0) + scaleR(row.gdp || 0) * 2.1,
                 }}
                 style={{
                   x: spring(scaleX(row.shareEmissions)),
                   y: spring(scaleY(row.shareScc)),
                   capita: spring(-0.75 * row.sccPerCapita),
                   r: spring(scaleR(row.gdp) / 2),
-                  textY: spring(scaleY(row.shareScc) + scaleR(row.gdp) * 0.95),
+                  textY: spring(scaleY(row.shareScc) + scaleR(row.gdp) * 2.1),
                 }}
               >
                 {values => (
@@ -299,7 +299,7 @@ export class CsccFig4 extends React.Component<*, *> {
                       <text
                         style={{fontSize: 12}}
                         x={scaleX(row.shareEmissions)}
-                        y={values.y + scaleR(row.gdp) * 0.75}
+                        y={values.y + scaleR(row.gdp) * 0.85}
                       >
                         {row.label}
                       </text>
