@@ -21,7 +21,7 @@ class App extends Component {
     const {page} = this.state;
     return (
       <div className="App">
-        <h1>Social Cost of Carbon</h1>
+        <h1>Country-Level Social Cost of Carbon</h1>
 
         <div className="top-nav">
           <button
