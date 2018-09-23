@@ -159,7 +159,7 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
     return euData ? [...allData, euData] : allData;
   }
 
-  state={
+  state = {
     csccData: [],
     csccLoading: true,
     wbData: [],
@@ -168,7 +168,7 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
 
   getData = () => {
     return this.dataToRender(this.state.csccData, this.state.wbData);
-  }
+  };
 
   render() {
     const {dmg, rcp, ssp} = this.props;
@@ -185,12 +185,16 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
         <CSVLoader
           test={test}
           csvPath={`${process.env.PUBLIC_URL || ''}/${csvPath}`}
-          onChange={({data, loading}) => this.setState({csccData: data, csccLoading: loading})}
+          onChange={({data, loading}) =>
+            this.setState({csccData: data, csccLoading: loading})
+          }
         />
         <CSVLoader
-              dynamicTyping={col => !col.includes('Country')}
-              csvPath={`${process.env.PUBLIC_URL || ''}/gdp_pop_co2e.csv`}
-              onChange={({data, loading}) => this.setState({wbData: data, wbLoading: loading})}
+          dynamicTyping={col => !col.includes('Country')}
+          csvPath={`${process.env.PUBLIC_URL || ''}/gdp_pop_co2e.csv`}
+          onChange={({data, loading}) =>
+            this.setState({wbData: data, wbLoading: loading})
+          }
         />
         {this.props.children({data})}
       </React.Fragment>
@@ -207,7 +211,18 @@ export class CsccFig4 extends React.Component<*, *> {
     domainY: [-6, 23],
     xAxis: [0, 10, 20, 30],
     yAxis: [-30, -25, -20, -15, -10, -5, 0, 5, 10, 15, 20, 25, 30, 35],
-    labelCountries: ['USA', 'CHN', 'IND', 'EUC', 'RUS', 'MEX', 'SAU', 'BRA', 'CAN', 'JPN'],
+    labelCountries: [
+      'USA',
+      'CHN',
+      'IND',
+      'EUC',
+      'RUS',
+      'MEX',
+      'SAU',
+      'BRA',
+      'CAN',
+      'JPN',
+    ],
     clip: false,
     padding: {x: 20, y: 10},
   };
@@ -252,7 +267,12 @@ export class CsccFig4 extends React.Component<*, *> {
       .clamp(true);
 
     return (
-      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} xmlns="http://www.w3.org/2000/svg">
+      <svg
+        width={width}
+        height={height}
+        viewBox={`0 0 ${width} ${height}`}
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <Fig4Axes
           domainX={domainX}
           domainY={domainY}
@@ -342,15 +362,19 @@ const Fig4Axes = ({
         strokeWidth={1}
       />
       {xAxis.map(x => (
-        <line
-          key={`xAxisAt${x}`}
-          x1={scaleX(x)}
-          x2={scaleX(x)}
-          y1={scaleY(45)}
-          y2={scaleY(-40)}
-          stroke="#ddd"
-          strokeWidth={1}
-        />
+        <React.Fragment key={`xAxisAt${x}`}>
+          <line
+            x1={scaleX(x)}
+            x2={scaleX(x)}
+            y1={scaleY(45)}
+            y2={scaleY(-40) + 2}
+            stroke="#ddd"
+            strokeWidth={1}
+          />
+          <text x={scaleX(x)} y={scaleY(-40) + 10} fontSize={10} color="#666" textAnchor="middle">
+            {x}
+          </text>
+        </React.Fragment>
       ))}
       {yAxis.filter(y => y >= domainY[0] && y <= domainY[1]).map(y => (
         <Motion
