@@ -22,7 +22,7 @@ export default class ParameterPicker extends React.Component<
     ssp: "SSP2",
     rcp: "rcp60",
     dmg: "bhm_sr",
-    discounting: 'fixed',
+    discounting: 'growth adjusted',
   };
 
   static defaultProps = { callback: () => {} };
