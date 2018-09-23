@@ -4,6 +4,7 @@ import * as React from 'react';
 import {scaleLinear, scaleDiverging, scaleLog} from 'd3-scale';
 import {interpolateRdBu} from 'd3-scale-chromatic';
 import {Motion, spring} from 'react-motion';
+import get from 'lodash/get';
 
 import CSVLoader from './csv-loader.js';
 
@@ -179,6 +180,7 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
         : Fig4DataLoader.growthAdjustedDiscounting;
 
     const data = this.getData();
+    const loaded = !this.state.csccLoading && !this.state.wbLoading;
 
     return (
       <React.Fragment>
@@ -294,18 +296,18 @@ export class CsccFig4 extends React.Component<*, *> {
               <Motion
                 key={row.ISO3}
                 defaultStyle={{
-                  x: scaleX(row.shareEmissions || 0),
-                  y: scaleY(row.shareScc || 0),
-                  r: scaleR(row.gdp || 0) / 2,
-                  capita: -0.75 * row.sccPerCapita || 0,
-                  textY: scaleY(row.shareScc || 0) + scaleR(row.gdp || 0) * 2.1,
+                  x: scaleX(get(row, 'shareEmissions', 0)),
+                  y: scaleY(get(row, 'shareScc', 0)),
+                  r: scaleR(get(row, 'gdp', 0)) / 2,
+                  capita: (-0.75 * get(row, 'sccPerCapita', 0)),
+                  textY: scaleY(get(row, 'shareScc', 0)) + scaleR(get(row, 'gdp', 0)) * 2.1,
                 }}
                 style={{
-                  x: spring(scaleX(row.shareEmissions)),
-                  y: spring(scaleY(row.shareScc)),
-                  capita: spring(-0.75 * row.sccPerCapita),
-                  r: spring(scaleR(row.gdp) / 2),
-                  textY: spring(scaleY(row.shareScc) + scaleR(row.gdp) * 2.1),
+                  x: spring(scaleX(get(row, 'shareEmissions', 0))),
+                  y: spring(scaleY(get(row, 'shareScc', 0))),
+                  capita: spring(-0.75 * get(row, 'sccPerCapita', 0)),
+                  r: spring(scaleR(get(row, 'gdp', 0)) / 2),
+                  textY: spring(scaleY(get(row, 'shareScc', 0)) + scaleR(get(row, 'gdp', 0)) * 2.1),
                 }}
               >
                 {values => (
