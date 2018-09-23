@@ -12,7 +12,7 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
     ssp: 'SSP2',
     rcp: 'rcp60',
     dmg: 'bhm_sr',
-    discounting: 'fixed',
+    discounting: 'growth adjusted',
     countriesToPlot: [
       'ARG',
       'AUS',
@@ -36,7 +36,7 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
     ],
   };
 
-  static growthAdjustedDiscounting(row: {prtp: string}) {
+  static fixedDiscounting(row: {prtp: string}) {
     return (
       row.prtp !== '2' &&
       row.dmgfuncpar === 'bootstrap' &&
@@ -44,7 +44,7 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
     );
   }
 
-  static fixedDiscounting(row: {prtp: string}) {
+  static growthAdjustedDiscounting(row: {prtp: string}) {
     return (
       row.prtp === '2' &&
       row.dmgfuncpar === 'bootstrap' &&
