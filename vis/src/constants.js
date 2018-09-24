@@ -17,5 +17,5 @@ export const DMGS = [
   { value: "bhm_richpoor_sr", label: "bhm rich/poor short run" },
   { value: "bhm_lr", label: "bhm long run" },
   { value: "bhm_richpoor_lr", label: "bhm rich/poor long run" },
-  { value: "djo", label: "DJO" }
+  // { value: "djo", label: "DJO" }
 ];

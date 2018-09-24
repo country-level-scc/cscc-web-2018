@@ -4,7 +4,7 @@ import ReactDOMServer from 'react-dom/server';
 
 import {Fig1Options} from './SccFig1';
 import {Fig2Options} from './SccFig2';
-import {Fig4DataLoader, CsccFig4} from './SccFig4.js';
+import {Fig4DataLoader, CsccFig4, Fig4Legend} from './SccFig4.js';
 import {RCPS, DMGS, SSPS} from './constants';
 import ParameterPicker from './param-picker';
 import {saveAs} from 'file-saver';
@@ -49,7 +49,7 @@ class App extends Component {
             <ParameterPicker>
               {({state}) => (
                 <React.Fragment>
-                  <div style={{display: 'flex', marginBottom: 20}}>
+                  <div style={{display: 'flex', marginBottom: 20, flex: '1', width: 800}}>
                     <Fig4DataLoader {...state} ref={el => this.bigFig4 = el}>
                       {({data}) => <React.Fragment>
                         <CsccFig4 data={data} />
@@ -64,6 +64,7 @@ class App extends Component {
                           clip={true}
                           data={data}
                         />
+                        <Fig4Legend />
                       </React.Fragment>
                       }
                     </Fig4DataLoader>

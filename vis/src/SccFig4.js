@@ -2,8 +2,10 @@
 
 import * as React from 'react';
 import {scaleLinear, scaleDiverging, scaleLog} from 'd3-scale';
-import {interpolateRdBu} from 'd3-scale-chromatic';
+import {interpolateRdBu, schemeRdBu} from 'd3-scale-chromatic';
 import {Motion, spring} from 'react-motion';
+import uniqueId from 'lodash/uniqueId';
+import range from 'lodash/range';
 
 import CSVLoader from './csv-loader.js';
 
@@ -271,12 +273,17 @@ export class CsccFig4 extends React.Component<*, *> {
       .range([height - padding.y, 1]);
 
     const color = scaleDiverging(interpolateRdBu)
-      .domain([-0.15, 0, 0.23])
+      // .domain([-0.15, 0, 0.23])
+      .domain([-0.5, 0, 0.25])
       .clamp(true);
 
-    const safe = val => {if (Number.isNaN(val) || val == null){
-      return 0
-    } else {return val}};
+    const safe = val => {
+      if (Number.isNaN(val) || val == null) {
+        return 0;
+      } else {
+        return val;
+      }
+    };
 
     return (
       <svg
@@ -303,24 +310,24 @@ export class CsccFig4 extends React.Component<*, *> {
           })
           .map(row => {
             const shareEmissions = safe(row.shareEmissions);
-            const shareScc = safe(row.shareScc)
+            const shareScc = safe(row.shareScc);
             const gdp = safe(row.gdp);
             const gdpRadius = safe(scaleR(gdp));
             const sccPerCapita = safe(row.sccPerCapita);
             return (
               <Motion
-                key={row.ISO3}
+                key={`${row.ISO3}`}
                 defaultStyle={{
                   x: scaleX(shareEmissions),
                   y: scaleY(shareScc),
                   r: gdpRadius / 2,
-                  capita: (-0.75 * sccPerCapita),
+                  capita: sccPerCapita,
                   textY: scaleY(shareScc) + gdpRadius * 2.1,
                 }}
                 style={{
                   x: spring(scaleX(shareEmissions)),
                   y: spring(scaleY(shareScc)),
-                  capita: spring(-0.75 * sccPerCapita),
+                  capita: spring(sccPerCapita),
                   r: spring(gdpRadius / 2),
                   textY: spring(scaleY(shareScc) + gdpRadius * 2.1),
                 }}
@@ -328,12 +335,16 @@ export class CsccFig4 extends React.Component<*, *> {
                 {values => (
                   <React.Fragment key={row.ISO3}>
                     <circle
-                      title={`${row.label}: ${color(values.capita)}`}
+                      title={`${row.label}: ${values.capita}== ${color(
+                        values.capita,
+                      )}`}
                       key={row.ISO3}
                       cx={safe(values.x)}
                       cy={safe(values.y)}
                       fill={
-                        color(safe(values.capita)) /*color(-0.75 * row.sccPerCapita)*/
+                        color(
+                          safe(-1 * values.capita),
+                        ) /*color(-0.75 * row.sccPerCapita)*/
                       }
                       r={safe(values.r)}
                       strokeWidth={1}
@@ -388,7 +399,13 @@ const Fig4Axes = ({
             stroke="#ddd"
             strokeWidth={1}
           />
-          <text x={scaleX(x)} y={scaleY(-40) + 10} fontSize={10} color="#666" textAnchor="middle">
+          <text
+            x={scaleX(x)}
+            y={scaleY(-40) + 10}
+            fontSize={10}
+            color="#666"
+            textAnchor="middle"
+          >
             {x}
           </text>
         </React.Fragment>
@@ -464,3 +481,115 @@ const SlopeLines = ({scaleX, scaleY, domainX, domainY, slopes}) => (
     })}
   </React.Fragment>
 );
+
+export class Fig4Legend extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      gradientId: uniqueId('gradient'),
+    };
+  }
+  render() {
+    const colorInterpolate = scaleDiverging(interpolateRdBu)
+      .domain([-0.5, 0, 0.25])
+      .clamp(true);
+
+    const width = 0.75 / 10;
+    const scalePerCapita = scaleLinear()
+      .domain([-0.25, 0.5])
+      .range([-0.5, 0.25]);
+    const scaleY = scaleLinear()
+      .domain([-0.25, 0.5])
+      .range([80, 0])
+      .clamp(true);
+
+    return (
+      <svg>
+        <defs>
+          <linearGradient
+            id={this.state.gradientId}
+            gradientTransform="rotate(90)"
+          >
+            {range(11).map(idx => (
+              <stop
+                key={idx}
+                offset={`${idx * 10}%`}
+                stopColor={colorInterpolate(idx * width - 0.5)}
+              />
+            ))}
+          </linearGradient>
+        </defs>
+        <text x={80} y={20} fontSize={10}>
+        SCC Per Capita ($/MtCO2/person)
+        </text>
+        <g transform="translate(25 10)">
+          <rect
+            width={30}
+            height={80}
+            fill={`url(#${this.state.gradientId})`}
+            x={0}
+            y={0}
+          />
+          <text y={scaleY(0) + 3} x={35} fontSize={10}>
+            0
+          </text>
+          <line
+            x1={0}
+            x2={5}
+            y1={scaleY(0)}
+            y2={scaleY(0)}
+            strokeWidth={1}
+            stroke="#666"
+          />
+          <line
+            x1={25}
+            x2={30}
+            y1={scaleY(0)}
+            y2={scaleY(0)}
+            strokeWidth={1}
+            stroke="#666"
+          />
+          <line
+            x1={0}
+            x2={5}
+            y1={scaleY(0.5 - width / 2)}
+            y2={scaleY(0.5 - width / 2)}
+            strokeWidth={1}
+            stroke="#fff"
+          />
+          <line
+            x1={25}
+            x2={30}
+            y1={scaleY(0.5 - width / 2)}
+            y2={scaleY(0.5 - width / 2)}
+            strokeWidth={1}
+            stroke="#fff"
+          />
+
+          <line
+            x1={0}
+            x2={5}
+            y1={scaleY(-0.25 + width / 2)}
+            y2={scaleY(-0.25 + width / 2)}
+            strokeWidth={1}
+            stroke="#fff"
+          />
+          <line
+            x1={25}
+            x2={30}
+            y1={scaleY(-0.25 + width / 2)}
+            y2={scaleY(-0.25 + width / 2)}
+            strokeWidth={1}
+            stroke="#fff"
+          />
+          <text y={scaleY(0.5 - width / 2) + 3} x={35} fontSize={10}>
+            0.5
+          </text>
+          <text y={scaleY(-0.25 + width / 2) + 3} x={35} fontSize={10}>
+            -0.25
+          </text>
+        </g>
+      </svg>
+    );
+  }
+}
