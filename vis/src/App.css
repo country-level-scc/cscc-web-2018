@@ -231,3 +231,28 @@ h1 {
 .fig1-picker-row button {
   cursor: pointer;
 }
+
+.fig4-circle {
+  cursor: pointer;
+}
+.fig4-detail {
+  margin-left: 65px;
+}
+.fig4-detail p {
+  font-size: 12px;
+  margin: 0;
+}
+.fig4-y-axis-label {
+  font-size: 10px;
+  position: absolute;
+  top: 130px;
+  left: -104px;
+  transform: rotate(-90deg);
+  display: inline-block;
+}
+.fig4-x-axis-label {
+  font-size: 10px;
+  position: absolute;
+  top: 275px;
+  left: 100px;
+}

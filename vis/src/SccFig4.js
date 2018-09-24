@@ -344,15 +344,23 @@ export class CsccFig4 extends React.Component<*, *> {
                       fill={
                         color(
                           safe(-1 * values.capita),
-                        ) /*color(-0.75 * row.sccPerCapita)*/
+                        )
                       }
+                      className='fig4-circle'
                       r={safe(values.r)}
                       strokeWidth={1}
                       stroke="#444"
+                      onClick={() => this.props.onCountrySelect && this.props.onCountrySelect({
+                        ...row,
+                        color: color(
+                          safe(-1 * sccPerCapita),
+                        ),
+                        radius: safe(gdpRadius/2)
+                      })}
                     />
                     {this.props.labelCountries.includes(row.ISO3) && (
                       <text
-                        style={{fontSize: 12}}
+                        style={{fontSize: 12, pointerEvents: 'none'}}
                         x={scaleX(safe(row.shareEmissions))}
                         y={safe(values.y) + safe(scaleR(safe(row.gdp))) * 0.85}
                       >
@@ -495,13 +503,16 @@ export class Fig4Legend extends React.Component {
       .clamp(true);
 
     const width = 0.75 / 10;
-    const scalePerCapita = scaleLinear()
-      .domain([-0.25, 0.5])
-      .range([-0.5, 0.25]);
+
     const scaleY = scaleLinear()
       .domain([-0.25, 0.5])
       .range([80, 0])
       .clamp(true);
+
+    const scaleR = scaleLog()
+      .domain([5.3, 14])
+      .range([1, 30]);
+
 
     return (
       <svg>
@@ -519,8 +530,8 @@ export class Fig4Legend extends React.Component {
             ))}
           </linearGradient>
         </defs>
-        <text x={80} y={20} fontSize={10}>
-        SCC Per Capita ($/MtCO2/person)
+        <text x={90} y={20} fontSize={10}>
+        SCC Per Capita (US$/MtCO2/person)
         </text>
         <g transform="translate(25 10)">
           <rect
@@ -588,6 +599,17 @@ export class Fig4Legend extends React.Component {
           <text y={scaleY(-0.25 + width / 2) + 3} x={35} fontSize={10}>
             -0.25
           </text>
+        </g>
+        <g transform='translate(90 100)'>
+          <text x={0} y={10} fontSize={10}>
+          Log(GDP(US$))
+          </text>
+          <circle r={scaleR(7)} cx={10} cy={30} strokeWidth={1} stroke='#666' fill='transparent' />
+          <text fontSize={10} x={10} y={33} textAnchor='middle'>7</text>
+          <circle r={scaleR(8)} cx={40} cy={30} strokeWidth={1} stroke='#666' fill='transparent' />
+          <text fontSize={10} x={40} y={33} textAnchor='middle'>8</text>
+          <circle r={scaleR(9)} cx={80} cy={30} strokeWidth={1} stroke='#666' fill='transparent' />
+          <text fontSize={10} x={80} y={33} textAnchor='middle'>9</text>
         </g>
       </svg>
     );
