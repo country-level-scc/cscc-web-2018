@@ -12,7 +12,7 @@ import {RCPS, DMGS} from './constants'
 
 const projection = geoNaturalEarth1()
   .scale(100)
-  .translate([800 / 2, 450 / 2]);
+  .translate([800 / 2, 275 / 2])
 const worldMap = feature(map, map.objects.countries).features;
 
 type Props = {
@@ -28,8 +28,8 @@ class Figure2 extends React.Component<Props> {
     const {data} = this.props;
 
     return (
-      <svg width={800} height={350} viewBox="150 0 800 350">
-        <g transform={`translate(675, 75)`}>
+      <svg width={800} height={250} viewBox="150 0 800 250">
+        <g transform={`translate(675, 0)`}>
           ><Fig2Legend bins={fig2Bins} labels={{0: '<-10', 7: '>100'}} />
         </g>
         <g className="countries">
@@ -38,7 +38,7 @@ class Figure2 extends React.Component<Props> {
             const {
               properties: {label, id},
             } = country;
-            const countryRow = data.filter(row => row.ISO3 === id)[0];
+            const countryRow = data.find(row => row.ISO3 === id);
 
             return (
               <path
@@ -144,7 +144,7 @@ export class Fig2Options extends React.Component<ParamProps, ParamState> {
     this.setState({[evt.currentTarget.name]: evt.currentTarget.value});
   };
 
-  static growthAdjustedDiscounting(row: { prtp: string }) {
+  static fixedDiscounting(row: { prtp: string }) {
     return (
       row.prtp !== "2" &&
       row.dmgfuncpar === "bootstrap" &&
@@ -152,7 +152,7 @@ export class Fig2Options extends React.Component<ParamProps, ParamState> {
     );
   }
 
-  static fixedDiscounting(row: { prtp: string }) {
+  static growthAdjustedDiscounting(row: { prtp: string }) {
     return (
       row.prtp === "2" &&
       row.dmgfuncpar === "bootstrap" &&

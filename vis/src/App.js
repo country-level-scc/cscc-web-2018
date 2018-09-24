@@ -104,6 +104,7 @@ class App extends Component {
         {page === 'cscc' && (
           <React.Fragment>
             <Fig2Options
+              country={this.state.selectedCountry}
               onCountrySelect={selectedCountry =>
                 this.setState({
                   selectedCountry,

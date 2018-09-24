@@ -123,6 +123,10 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
     };
   }
 
+  componentDidUpdate() {
+    console.log('updating fig4',this.state)
+  }
+
   getAllData(csccData, wbData) {
     const worldCsccData = csccData.find(r => r.ISO3 === 'WLD');
     const totalCscc = worldCsccData ? worldCsccData['50%'] : 1;
@@ -147,8 +151,18 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
             label: worldBankData['Country Name'],
           };
         } else {
+          console.log({csccData, wbData})
+          debugger;
           console.warn(`no matching data for ${row.ISO3}`);
-          return row;
+          return {
+            sccPerCapita: 0,
+            logGdp: 0,
+            gdp: 0,
+            shareEmissions: 0,
+            shareScc: 0,
+            ISO3: row.ISO3, // extras:
+            label: '',
+          };
         }
       })
       .filter(row => this.props.countriesToPlot.includes(row.ISO3));
@@ -180,7 +194,6 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
         : Fig4DataLoader.growthAdjustedDiscounting;
 
     const data = this.getData();
-    const loaded = !this.state.csccLoading && !this.state.wbLoading;
 
     return (
       <React.Fragment>
@@ -268,6 +281,12 @@ export class CsccFig4 extends React.Component<*, *> {
       .domain([-0.15, 0, 0.23])
       .clamp(true);
 
+    const safe = val => {if (Number.isNaN(val) || val == null){
+      console.error('uh oh, not safe')
+      debugger;
+      return 0
+    } else {return val}};
+
     return (
       <svg
         width={width}
@@ -292,22 +311,27 @@ export class CsccFig4 extends React.Component<*, *> {
               : true;
           })
           .map(row => {
+            const shareEmissions = safe(row.shareEmissions);
+            const shareScc = safe(row.shareScc)
+            const gdp = safe(row.gdp);
+            const gdpRadius = safe(scaleR(gdp));
+            const sccPerCapita = safe(row.sccPerCapita);
             return (
               <Motion
                 key={row.ISO3}
                 defaultStyle={{
-                  x: scaleX(get(row, 'shareEmissions', 0)),
-                  y: scaleY(get(row, 'shareScc', 0)),
-                  r: scaleR(get(row, 'gdp', 0)) / 2,
-                  capita: (-0.75 * get(row, 'sccPerCapita', 0)),
-                  textY: scaleY(get(row, 'shareScc', 0)) + scaleR(get(row, 'gdp', 0)) * 2.1,
+                  x: scaleX(shareEmissions),
+                  y: scaleY(shareScc),
+                  r: gdpRadius / 2,
+                  capita: (-0.75 * sccPerCapita),
+                  textY: scaleY(shareScc) + gdpRadius * 2.1,
                 }}
                 style={{
-                  x: spring(scaleX(get(row, 'shareEmissions', 0))),
-                  y: spring(scaleY(get(row, 'shareScc', 0))),
-                  capita: spring(-0.75 * get(row, 'sccPerCapita', 0)),
-                  r: spring(scaleR(get(row, 'gdp', 0)) / 2),
-                  textY: spring(scaleY(get(row, 'shareScc', 0)) + scaleR(get(row, 'gdp', 0)) * 2.1),
+                  x: spring(scaleX(shareEmissions)),
+                  y: spring(scaleY(shareScc)),
+                  capita: spring(-0.75 * sccPerCapita),
+                  r: spring(gdpRadius / 2),
+                  textY: spring(scaleY(shareScc) + gdpRadius * 2.1),
                 }}
               >
                 {values => (
@@ -315,20 +339,20 @@ export class CsccFig4 extends React.Component<*, *> {
                     <circle
                       title={`${row.label}: ${color(values.capita)}`}
                       key={row.ISO3}
-                      cx={values.x}
-                      cy={values.y}
+                      cx={safe(values.x)}
+                      cy={safe(values.y)}
                       fill={
-                        color(values.capita) /*color(-0.75 * row.sccPerCapita)*/
+                        color(safe(values.capita)) /*color(-0.75 * row.sccPerCapita)*/
                       }
-                      r={values.r}
+                      r={safe(values.r)}
                       strokeWidth={1}
                       stroke="#444"
                     />
                     {this.props.labelCountries.includes(row.ISO3) && (
                       <text
                         style={{fontSize: 12}}
-                        x={scaleX(row.shareEmissions)}
-                        y={values.y + scaleR(row.gdp) * 0.85}
+                        x={scaleX(safe(row.shareEmissions))}
+                        y={safe(values.y) + safe(scaleR(safe(row.gdp))) * 0.85}
                       >
                         {row.label}
                       </text>
