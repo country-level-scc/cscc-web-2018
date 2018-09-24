@@ -17,6 +17,12 @@ class App extends Component {
     page: 'winners',
   };
 
+  componentDidMount() {
+    if (window.location.hash !== '' && ['#winners', '#cscc'].includes(window.location.hash)) {
+      this.setState({page: window.location.hash.substring(1)})
+    }
+  }
+
   render() {
     const {page} = this.state;
     return (
@@ -45,11 +51,9 @@ class App extends Component {
                 <React.Fragment>
                   <div style={{display: 'flex', marginBottom: 20}}>
                     <Fig4DataLoader {...state} ref={el => this.bigFig4 = el}>
-                      {({data}) => <CsccFig4 data={data} />}
-                    </Fig4DataLoader>
-                    <div style={{marginRight: 60}} />
-                    <Fig4DataLoader {...state}>
-                      {({data}) => (
+                      {({data}) => <React.Fragment>
+                        <CsccFig4 data={data} />
+                        <div style={{marginRight: 40}} />
                         <CsccFig4
                           width={150}
                           height={300}
@@ -60,7 +64,8 @@ class App extends Component {
                           clip={true}
                           data={data}
                         />
-                      )}
+                      </React.Fragment>
+                      }
                     </Fig4DataLoader>
                   </div>
                   {false && <button onClick={() => {

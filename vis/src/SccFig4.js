@@ -4,7 +4,6 @@ import * as React from 'react';
 import {scaleLinear, scaleDiverging, scaleLog} from 'd3-scale';
 import {interpolateRdBu} from 'd3-scale-chromatic';
 import {Motion, spring} from 'react-motion';
-import get from 'lodash/get';
 
 import CSVLoader from './csv-loader.js';
 
@@ -121,10 +120,6 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
       label: 'EU',
       population: euPop,
     };
-  }
-
-  componentDidUpdate() {
-    console.log('updating fig4',this.state)
   }
 
   getAllData(csccData, wbData) {
@@ -280,8 +275,6 @@ export class CsccFig4 extends React.Component<*, *> {
       .clamp(true);
 
     const safe = val => {if (Number.isNaN(val) || val == null){
-      console.error('uh oh, not safe')
-      debugger;
       return 0
     } else {return val}};
 
