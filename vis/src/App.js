@@ -87,33 +87,69 @@ class App extends Component {
                           <div style={{display: 'flex', flexFlow: 'column'}}>
                             <Fig4Legend />
                             {this.state.fig4Data && (
-                              <div style={{marginTop: 12, display: 'flex', flexFlow: 'column'}}>
-                              <div style={{marginLeft: 30, display: 'flex', alignItems: 'center', borderTop: '1px solid #999'}}>
-                                <svg width={35} height={35} viewBox="0 0 35 35">
-                                  <circle
-                                    cx={17.5}
-                                    cy={17.5}
-                                    r={this.state.fig4Data.radius}
-                                    fill={this.state.fig4Data.color}
-                                    strokeWidth={1}
-                                    stroke='#666'
-                                  />
-                                </svg>
-                                <p>{this.state.fig4Data.label}</p>
-                              </div>
-                              <div className='fig4-detail'>
-                                <p>SCC Per Capita: ${this.state.fig4Data.sccPerCapita.toFixed(3)}</p>
-                                <p>SCC Share: {this.state.fig4Data.shareScc.toFixed(1)}%</p>
-                                <p>Emissions Share: {this.state.fig4Data.shareEmissions.toFixed(1)}%</p>
-                              </div>
+                              <div
+                                style={{
+                                  marginTop: 12,
+                                  display: 'flex',
+                                  flexFlow: 'column',
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    marginLeft: 30,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    borderTop: '1px solid #999',
+                                  }}
+                                >
+                                  <svg
+                                    width={35}
+                                    height={35}
+                                    viewBox="0 0 35 35"
+                                  >
+                                    <circle
+                                      cx={17.5}
+                                      cy={17.5}
+                                      r={this.state.fig4Data.radius}
+                                      fill={this.state.fig4Data.color}
+                                      strokeWidth={1}
+                                      stroke="#666"
+                                    />
+                                  </svg>
+                                  <p>{this.state.fig4Data.label}</p>
+                                </div>
+                                <div className="fig4-detail">
+                                  <p>
+                                    SCC: ${this.state.fig4Data.scc.toFixed(2)}
+                                  </p>
+                                  <p>
+                                    SCC Per Capita: ${this.state.fig4Data.sccPerCapita.toFixed(
+                                      3,
+                                    )}
+                                  </p>
+                                  <p>
+                                    SCC Share:{' '}
+                                    {this.state.fig4Data.shareScc.toFixed(1)}%
+                                  </p>
+                                  <p>
+                                    Emissions Share:{' '}
+                                    {this.state.fig4Data.shareEmissions.toFixed(
+                                      1,
+                                    )}%
+                                  </p>
+                                </div>
                               </div>
                             )}
                           </div>
                         </React.Fragment>
                       )}
                     </Fig4DataLoader>
-                    <p className='fig4-x-axis-label'>Share of global emissions 2014 (%)</p>
-                    <p className='fig4-y-axis-label'>Share of global social cost of carbon (%)</p>
+                    <p className="fig4-x-axis-label">
+                      Share of global emissions 2014 (%)
+                    </p>
+                    <p className="fig4-y-axis-label">
+                      Share of global social cost of carbon (%)
+                    </p>
                   </div>
                   {false && (
                     <button

@@ -121,6 +121,7 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
       ISO3: 'EUC',
       label: 'EU',
       population: euPop,
+      scc: euScc,
     };
   }
 
@@ -146,6 +147,7 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
             shareScc: 100 * row['50%'] / totalCscc,
             ISO3: row.ISO3, // extras:
             label: worldBankData['Country Name'],
+            scc: row['50%'],
           };
         } else {
           debugger;
@@ -157,6 +159,7 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
             shareScc: 0,
             ISO3: row.ISO3, // extras:
             label: '',
+            scc: 0,
           };
         }
       })
@@ -341,22 +344,19 @@ export class CsccFig4 extends React.Component<*, *> {
                       key={row.ISO3}
                       cx={safe(values.x)}
                       cy={safe(values.y)}
-                      fill={
-                        color(
-                          safe(-1 * values.capita),
-                        )
-                      }
-                      className='fig4-circle'
+                      fill={color(safe(-1 * values.capita))}
+                      className="fig4-circle"
                       r={safe(values.r)}
                       strokeWidth={1}
                       stroke="#444"
-                      onClick={() => this.props.onCountrySelect && this.props.onCountrySelect({
-                        ...row,
-                        color: color(
-                          safe(-1 * sccPerCapita),
-                        ),
-                        radius: safe(gdpRadius/2)
-                      })}
+                      onClick={() => {
+                        this.props.onCountrySelect &&
+                          this.props.onCountrySelect({
+                            ...row,
+                            color: color(safe(-1 * sccPerCapita)),
+                            radius: safe(gdpRadius / 2),
+                          });
+                      }}
                     />
                     {this.props.labelCountries.includes(row.ISO3) && (
                       <text
@@ -513,7 +513,6 @@ export class Fig4Legend extends React.Component {
       .domain([5.3, 14])
       .range([1, 30]);
 
-
     return (
       <svg>
         <defs>
@@ -531,7 +530,7 @@ export class Fig4Legend extends React.Component {
           </linearGradient>
         </defs>
         <text x={90} y={20} fontSize={10}>
-        SCC Per Capita (US$/MtCO2/person)
+          SCC Per Capita (US$/MtCO2/person)
         </text>
         <g transform="translate(25 10)">
           <rect
@@ -600,16 +599,43 @@ export class Fig4Legend extends React.Component {
             -0.25
           </text>
         </g>
-        <g transform='translate(90 100)'>
+        <g transform="translate(90 100)">
           <text x={0} y={10} fontSize={10}>
-          Log(GDP(US$))
+            Log(GDP(US$))
           </text>
-          <circle r={scaleR(7)} cx={10} cy={30} strokeWidth={1} stroke='#666' fill='transparent' />
-          <text fontSize={10} x={10} y={33} textAnchor='middle'>7</text>
-          <circle r={scaleR(8)} cx={40} cy={30} strokeWidth={1} stroke='#666' fill='transparent' />
-          <text fontSize={10} x={40} y={33} textAnchor='middle'>8</text>
-          <circle r={scaleR(9)} cx={80} cy={30} strokeWidth={1} stroke='#666' fill='transparent' />
-          <text fontSize={10} x={80} y={33} textAnchor='middle'>9</text>
+          <circle
+            r={scaleR(7)}
+            cx={10}
+            cy={30}
+            strokeWidth={1}
+            stroke="#666"
+            fill="transparent"
+          />
+          <text fontSize={10} x={10} y={33} textAnchor="middle">
+            7
+          </text>
+          <circle
+            r={scaleR(8)}
+            cx={40}
+            cy={30}
+            strokeWidth={1}
+            stroke="#666"
+            fill="transparent"
+          />
+          <text fontSize={10} x={40} y={33} textAnchor="middle">
+            8
+          </text>
+          <circle
+            r={scaleR(9)}
+            cx={80}
+            cy={30}
+            strokeWidth={1}
+            stroke="#666"
+            fill="transparent"
+          />
+          <text fontSize={10} x={80} y={33} textAnchor="middle">
+            9
+          </text>
         </g>
       </svg>
     );
