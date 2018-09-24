@@ -109,19 +109,23 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
     );
     const euPop = wbEu.reduce((acc, curr) => acc + curr['2017 Population'], 0);
     const euGdp = wbEu.reduce((acc, curr) => acc + curr['2017 GDP'], 0);
-    const euScc = csccEu.reduce((acc, curr) => acc + curr['50%'], 0);
-    const euSccPerCapita = 1000000 * euScc / euPop;
+    const euSccLow = csccEu.reduce((acc, curr) => acc + curr['16.7%'], 0);
+    const euSccMid = csccEu.reduce((acc, curr) => acc + curr['50%'], 0);
+    const euSccHigh = csccEu.reduce((acc, curr) => acc + curr['83.3%'], 0);
+    const euSccPerCapita = 1000000 * euSccMid / euPop;
     const euLogGdp = Math.log10(euGdp);
     return {
       sccPerCapita: euSccPerCapita,
       logGdp: euLogGdp,
       gdp: euGdp,
       shareEmissions: 100 * euCo2eShare,
-      shareScc: 100 * euScc / worldCsccData['50%'],
+      shareScc: 100 * euSccMid / worldCsccData['50%'],
       ISO3: 'EUC',
       label: 'EU',
       population: euPop,
-      scc: euScc,
+      '50%': euSccMid,
+      '16.7%': euSccLow,
+      '83.3%': euSccHigh,
     };
   }
 
@@ -147,7 +151,9 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
             shareScc: 100 * row['50%'] / totalCscc,
             ISO3: row.ISO3, // extras:
             label: worldBankData['Country Name'],
-            scc: row['50%'],
+            '50%': row['50%'],
+            '16.7%': row['16.7%'],
+            '83.3%': row['83.3%'],
           };
         } else {
           debugger;
@@ -159,7 +165,7 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
             shareScc: 0,
             ISO3: row.ISO3, // extras:
             label: '',
-            scc: 0,
+            '50%': 0,
           };
         }
       })
@@ -641,3 +647,35 @@ export class Fig4Legend extends React.Component {
     );
   }
 }
+
+export const SccTable = ({row}) => {
+  const fmt = val => (typeof val === 'number' ? val.toPrecision(5) : null);
+
+  return (
+    <React.Fragment>
+      <p className="f2-country-scc-desc">
+        Social Cost of Carbon in in USD/tCO <sub>2</sub>
+      </p>
+      {row ? (
+        <div className="f2-country-scc">
+          <div className="f2-pct-cell">
+            <div>{row && fmt(row['16.7%'])}</div>
+            <div>16.3%</div>
+          </div>
+
+          <div className="f2-pct-cell">
+            <div>{row && fmt(row['50%'])}</div>
+            <div>50%</div>
+          </div>
+
+          <div className="f2-pct-cell">
+            <div>{row && fmt(row['83.3%'])}</div>
+            <div>83.3%</div>
+          </div>
+        </div>
+      ) : (
+        <p className="f2-nodata">No data available</p>
+      )}
+    </React.Fragment>
+  );
+};

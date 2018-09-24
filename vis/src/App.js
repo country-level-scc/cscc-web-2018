@@ -4,7 +4,7 @@ import ReactDOMServer from 'react-dom/server';
 
 import {Fig1Options} from './SccFig1';
 import {Fig2Options} from './SccFig2';
-import {Fig4DataLoader, CsccFig4, Fig4Legend} from './SccFig4.js';
+import {Fig4DataLoader, CsccFig4, Fig4Legend, SccTable} from './SccFig4.js';
 import {RCPS, DMGS, SSPS} from './constants';
 import ParameterPicker from './param-picker';
 import {saveAs} from 'file-saver';
@@ -119,9 +119,7 @@ class App extends Component {
                                   <p>{this.state.fig4Data.label}</p>
                                 </div>
                                 <div className="fig4-detail">
-                                  <p>
-                                    SCC: ${this.state.fig4Data.scc.toFixed(2)}
-                                  </p>
+                                  <SccTable row={this.state.fig4Data} />
                                   <p>
                                     SCC Per Capita: ${this.state.fig4Data.sccPerCapita.toFixed(
                                       3,
