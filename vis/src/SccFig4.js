@@ -151,9 +151,7 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
             label: worldBankData['Country Name'],
           };
         } else {
-          console.log({csccData, wbData})
           debugger;
-          console.warn(`no matching data for ${row.ISO3}`);
           return {
             sccPerCapita: 0,
             logGdp: 0,

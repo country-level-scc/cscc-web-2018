@@ -129,6 +129,10 @@ h1 {
   animation: pulse 1s infinite ease-in-out;
 }
 
+.f2-main-row{
+  display: flex;
+  flex-flow: row;
+}
 .f2-country-detail {
   text-align: left;
   font: 22px helvetica;
@@ -138,9 +142,31 @@ h1 {
 .f2-country-detail p {
   margin: 0;
 }
+.f2-country-scc-desc.f2-country-scc-desc {
+  font-size: 12px;
+  margin-top: 8px;
+}
 .f2-countryname.f2-countryname {
   line-height: 1em;
   margin: 4px 0;
+  padding: 8px 0;
+}
+.f2-country-scc {
+  display: flex;
+  flex-flow: row;
+}
+.f2-pct-cell {
+  font-size: 12px;
+  flex: 1;
+}
+.f2-pct-cell > div {
+  padding: 4px 0;
+}
+.f2-pct-cell > div:first-child {
+  border-bottom: 1px solid #666;
+}
+.f2-pct-cell > div:nth-child(2) {
+  color: #999;
 }
 .f2-clscc, .f2-nodata {
   font-size: 12px;

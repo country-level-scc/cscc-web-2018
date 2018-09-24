@@ -8,11 +8,11 @@ import map from './ne_110_topo_quant.json';
 import {schemeRdYlBu} from 'd3-scale-chromatic';
 import CSVLoader from './csv-loader';
 import ParameterPicker from './param-picker';
-import {RCPS, DMGS} from './constants'
+import {RCPS, DMGS} from './constants';
 
 const projection = geoNaturalEarth1()
   .scale(100)
-  .translate([800 / 2, 275 / 2])
+  .translate([800 / 2, 275 / 2]);
 const worldMap = feature(map, map.objects.countries).features;
 
 type Props = {
@@ -28,7 +28,7 @@ class Figure2 extends React.Component<Props> {
     const {data} = this.props;
 
     return (
-      <svg width={800} height={250} viewBox="150 0 800 250">
+      <svg width={600} height={250} viewBox="150 0 600 250">
         <g transform={`translate(675, 0)`}>
           ><Fig2Legend bins={fig2Bins} labels={{0: '<-10', 7: '>100'}} />
         </g>
@@ -144,106 +144,111 @@ export class Fig2Options extends React.Component<ParamProps, ParamState> {
     this.setState({[evt.currentTarget.name]: evt.currentTarget.value});
   };
 
-  static fixedDiscounting(row: { prtp: string }) {
+  static fixedDiscounting(row: {prtp: string}) {
     return (
-      row.prtp !== "2" &&
-      row.dmgfuncpar === "bootstrap" &&
-      row.climate === "uncertain"
+      row.prtp !== '2' &&
+      row.dmgfuncpar === 'bootstrap' &&
+      row.climate === 'uncertain'
     );
   }
 
-  static growthAdjustedDiscounting(row: { prtp: string }) {
+  static growthAdjustedDiscounting(row: {prtp: string}) {
     return (
-      row.prtp === "2" &&
-      row.dmgfuncpar === "bootstrap" &&
-      row.climate === "uncertain"
+      row.prtp === '2' &&
+      row.dmgfuncpar === 'bootstrap' &&
+      row.climate === 'uncertain'
     );
   }
 
   render() {
-    const ssps = ['SSP1', 'SSP2', 'SSP3', 'SSP4', 'SSP5'];
-    const rcps = ['rcp45', 'rcp60', 'rcp85'];
-    const dmgs = [
-      'bhm_sr',
-      'bhm_richpoor_sr',
-      'bhm_lr',
-      'bhm_richpoor_lr',
-      'djo',
-    ];
-
     const {hoveredData} = this.state;
 
     return (
-      <div>
+      <div className="f2">
         <ParameterPicker>
           {({state: {rcp, ssp, dmg, discounting}}) => (
             <CSVLoader
-              csvPath={`${process.env.PUBLIC_URL}/rcp_${rcp}_dmg_${
-                dmg
-              }_ssp_${ssp}.csv`}
-              test={discounting === 'fixed' ? Fig2Options.fixedDiscounting : Fig2Options.growthAdjustedDiscounting}
+              csvPath={`${
+                process.env.PUBLIC_URL
+              }/rcp_${rcp}_dmg_${dmg}_ssp_${ssp}.csv`}
+              test={
+                discounting === 'fixed'
+                  ? Fig2Options.fixedDiscounting
+                  : Fig2Options.growthAdjustedDiscounting
+              }
             >
               {({data, loading}) => (
-                <div className={loading ? 'loading-map' : undefined}>
-                  <Figure2
-                    data={data}
-                    onCountryEnter={this.hoverCountry}
-                    onCountryClick={this.props.onCountrySelect}
-                  />
-                              <p className="caption">
-            Spatial distribution of
-            median estimates of the CSCC computed for the reference case of scenario{' '}
-            {ssp}/{RCPS.find(x => x.value === rcp).label}, {DMGS.find(x => x.value === dmg).label} impact function ({dmg}), and a{' '}
-            {discounting === 'fixed' ? 'fixed discount rate' : 'growth adjusted discount rate with 2% pure rate of time preference and IES of 1.5'}.
-            </p>
+                <div
+                  className={`${
+                    loading ? 'loading-map' : undefined
+                  } f2-main-row`}
+                >
+                  <div>
+                    <Figure2
+                      data={data}
+                      onCountryEnter={this.hoverCountry}
+                      onCountryClick={this.props.onCountrySelect}
+                    />
+                    <p className="caption">
+                      Spatial distribution of median estimates of the CSCC
+                      computed for the reference case of scenario {ssp}/{
+                        RCPS.find(x => x.value === rcp).label
+                      }, {DMGS.find(x => x.value === dmg).label} impact function
+                      ({dmg}), and a{' '}
+                      {discounting === 'fixed'
+                        ? 'fixed discount rate'
+                        : 'growth adjusted discount rate with 2% pure rate of time preference and IES of 1.5'}.
+                    </p>
+                  </div>
+                  <div className="f2-country-detail">
+                    {this.state.hoveredName ? (
+                      <React.Fragment>
+                        <p
+                          className="f2-countryname"
+                          style={{
+                            borderTop: `3px solid ${colorFor(hoveredData)}`,
+                            borderBottom: `3px solid ${colorFor(hoveredData)}`,
+                          }}
+                        >
+                          <strong>{this.state.hoveredName || ' '} </strong>
+                        </p>
+                        <p className="f2-country-scc-desc">
+                          Social Cost of Carbon in in USD/tCO <sub>2</sub>
+                        </p>
+                        {this.state.hoveredData ? (
+                          <div className="f2-country-scc">
+                            <div className="f2-pct-cell">
+                              <div>
+                                {hoveredData && fmt(hoveredData['16.7%'])}
+                              </div>
+                              <div>16.3%</div>
+                            </div>
 
+                            <div className="f2-pct-cell">
+                              <div>
+                                {hoveredData && fmt(hoveredData['50%'])}
+                              </div>
+                              <div>50%</div>
+                            </div>
+
+                            <div className="f2-pct-cell">
+                              <div>
+                                {hoveredData && fmt(hoveredData['83.3%'])}
+                              </div>
+                              <div>83.3%</div>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="f2-nodata">No data available</p>
+                        )}
+                      </React.Fragment>
+                    ) : null}
+                  </div>
                 </div>
               )}
             </CSVLoader>
           )}
         </ParameterPicker>
-
-        <div
-          className="f2-country-detail"
-          style={{borderTop: `3px solid ${colorFor(hoveredData)}`}}
-        >
-          <p className="f2-countryname">
-            <strong>
-              {this.state.hoveredName}{' '}
-              {hoveredData &&
-                hoveredData.ISO3 && (
-                  <button
-                    onClick={() => this.props.onCountrySelect(hoveredData.ISO3)}
-                  >
-                    👇
-                  </button>
-                )}
-            </strong>
-          </p>
-          {hoveredData ? (
-            <React.Fragment>
-              <p>
-                <span className="f2-clscc">
-                  16.3%: {hoveredData && fmt(hoveredData['16.7%'])}
-                </span>
-                <span className="f2-clscc">
-                  50%: {hoveredData && fmt(hoveredData['50%'])}
-                </span>
-                <span className="f2-clscc">
-                  83.3%: {hoveredData && fmt(hoveredData['83.3%'])}
-                </span>
-              </p>
-              <p className="f2-clscc">
-                in USD/tCO
-                <sub>2</sub>
-              </p>
-            </React.Fragment>
-          ) : (
-            this.state.hoveredName && (
-              <p className="f2-nodata">No data available</p>
-            )
-          )}
-        </div>
       </div>
     );
   }
@@ -255,7 +260,7 @@ export class Fig2Options extends React.Component<ParamProps, ParamState> {
   };
 }
 
-const fmt = val => typeof val === 'number' && Math.floor(val * 1000) / 1000;
+const fmt = val => typeof val === 'number' && Math.trunc(val * 1000) / 1000;
 
 export default Figure2;
 
