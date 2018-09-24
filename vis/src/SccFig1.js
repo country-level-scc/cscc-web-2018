@@ -309,7 +309,7 @@ export class Fig1Options extends React.Component<F1Props, F1State> {
     return (
       <div>
         <div className="fig1-picker-row">
-          <CountryNamePicker onChange={({id}) => this.props.onCountryChange(id)}/>
+          <CountryNamePicker country={country} onChange={({id}) => this.props.onCountryChange(id)}/>
           <button onClick={() => this.props.onCountryChange('WLD')}>
             reset to world
           </button>

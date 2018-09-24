@@ -9,6 +9,19 @@ export class CountryNamePicker extends React.Component<> {
     inputValue: '',
     focused: -2,
   };
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.country !== this.props.country) {
+      const possibleRow = countries.find(row => row.id === this.props.country);
+      if (possibleRow) {
+        this.setState({
+          country: possibleRow.id,
+          inputValue: possibleRow.label,
+        })
+      }
+    }
+  }
+
   render() {
     const filteredCountries =
       this.state.inputValue.trim() === ''

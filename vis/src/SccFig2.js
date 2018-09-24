@@ -21,9 +21,20 @@ type Props = {
   rcp?: string,
   dmg?: string,
   onCountryEnter: (name: string, data: {}) => any,
+  country?: string,
 };
 
 class Figure2 extends React.Component<Props> {
+  componentDidUpdate(prevProps) {
+    if (prevProps.country !== this.props.country) {
+      const country = worldMap.find(country => country.properties.id ===this.props.country)
+      const countryRow = this.props.data.find(row => row.ISO3 === this.props.country);
+      if (country && countryRow) {
+        const {label} = country.properties;
+        this.props.onCountryEnter(label, countryRow)
+      }
+    }
+  }
   render() {
     const {data} = this.props;
 
@@ -125,6 +136,7 @@ const Fig2Legend = ({bins, labels, size = 15, x, y}) => {
 
 type ParamProps = {
   onCountrySelect: (iso3: string) => any,
+  country?: string, // an iso3 country
 };
 type ParamState = {
   ssp: 'SSP1' | 'SSP2' | 'SSP3' | 'SSP4' | 'SSP5',
@@ -185,6 +197,7 @@ export class Fig2Options extends React.Component<ParamProps, ParamState> {
                 >
                   <div>
                     <Figure2
+                      country={this.props.country}
                       data={data}
                       onCountryEnter={this.hoverCountry}
                       onCountryClick={this.props.onCountrySelect}
