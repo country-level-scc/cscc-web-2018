@@ -14,15 +14,59 @@ import './App.css';
 class App extends Component {
   state = {
     selectedCountry: 'WLD',
-    page: 'winners',
+    page: '/winners',
   };
 
+  queryParse(query = '') {
+    return query
+      .split('&')
+      .map(pair => pair.split('='))
+      .map(kv => kv.map(decodeURIComponent))
+      .reduce((acc, curr) => {
+        acc[curr[0]] = curr[1];
+        return acc;
+      }, {});
+  }
+
+  queryEncode(obj = {}) {
+    return Object.keys(obj)
+      .map(key => [key, obj[key]])
+      .map(kv => kv.map(encodeURIComponent))
+      .map(kv => kv.join('='))
+      .join('&');
+  }
+
+  hashParse(hash) {
+    if (hash.startsWith('#')) {
+      const [path, query] = hash.substring(1).split('?');
+      return {path, query: this.queryParse(query)};
+    }
+    return {path: '', query: {}}
+  }
+
+  handleHashChange = evt => {
+    const {path, query} = this.hashParse(window.location.hash);
+    console.log({path, query});
+
+    // handle page change
+    if (['/winners', '/cscc'].includes(path)) {
+      if (this.state.page !== path){
+        this.setState({page: path});
+      }
+    }
+  };
+
+  nav = (path, query) => {
+    const querystring = this.queryEncode(query);
+    window.location.hash = `${path}${querystring.length > 0 ? `?${querystring}` : ''}`
+    this.setState({page: path, query})
+  }
+
   componentDidMount() {
-    if (
-      window.location.hash !== '' &&
-      ['#winners', '#cscc'].includes(window.location.hash)
-    ) {
-      this.setState({page: window.location.hash.substring(1)});
+    const {path, query} = this.hashParse(window.location.hash);
+    window.addEventListener('hashchange', this.handleHashChange);
+    if (path === '') {
+      window.location.hash = this.state.page;
     }
   }
 
@@ -34,20 +78,20 @@ class App extends Component {
 
         <div className="top-nav">
           <button
-            className={page === 'winners' ? 'activeNavButton' : undefined}
-            onClick={() => this.setState({page: 'winners'})}
+            className={page === '/winners' ? 'activeNavButton' : undefined}
+            onClick={/*() => this.setState({page: '/winners'})*/() => this.nav('/winners')}
           >
             ‘Winners’ &amp; ‘Losers’ among G20 nations.
           </button>
           <button
-            className={page === 'cscc' ? 'activeNavButton' : undefined}
-            onClick={() => this.setState({page: 'cscc'})}
+            className={page === '/cscc' ? 'activeNavButton' : undefined}
+            onClick={/*() => this.setState({page: '/cscc'})*/() => this.nav('/cscc')}
           >
             Country-level social cost of carbon
           </button>
         </div>
 
-        {page === 'winners' && (
+        {page === '/winners' && (
           <div>
             <ParameterPicker>
               {({state}) => (
@@ -205,7 +249,7 @@ class App extends Component {
           </div>
         )}
 
-        {page === 'cscc' && (
+        {page === '/cscc' && (
           <React.Fragment>
             <Fig2Options
               country={this.state.selectedCountry}
