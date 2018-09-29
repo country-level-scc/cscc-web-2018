@@ -15,6 +15,12 @@ class App extends Component {
   state = {
     selectedCountry: 'WLD',
     page: '/winners',
+    params: {
+      ssp: 'SSP2',
+      rcp: 'rcp60',
+      dmg: 'bhm_sr',
+      discounting: 'growth adjusted',
+    },
   };
 
   queryParse(query = '') {
@@ -31,6 +37,7 @@ class App extends Component {
   queryEncode(obj = {}) {
     return Object.keys(obj)
       .map(key => [key, obj[key]])
+      .filter(kv => kv[1] !== undefined)
       .map(kv => kv.map(encodeURIComponent))
       .map(kv => kv.join('='))
       .join('&');
@@ -41,33 +48,58 @@ class App extends Component {
       const [path, query] = hash.substring(1).split('?');
       return {path, query: this.queryParse(query)};
     }
-    return {path: '', query: {}}
+    return {path: '', query: {}};
   }
 
   handleHashChange = evt => {
     const {path, query} = this.hashParse(window.location.hash);
-    console.log({path, query});
 
     // handle page change
     if (['/winners', '/cscc'].includes(path)) {
-      if (this.state.page !== path){
+      if (this.state.page !== path) {
         this.setState({page: path});
       }
     }
   };
 
-  nav = (path, query) => {
+  nav = (pathStr, queryObj) => {
+    // navigate to hash-path with queryObj and merge query object
+    // same goes for path.
+    const currentQuery = this.hashParse(window.location.hash).query;
+    const query =
+      queryObj == null ? currentQuery : {...currentQuery, ...queryObj};
     const querystring = this.queryEncode(query);
-    window.location.hash = `${path}${querystring.length > 0 ? `?${querystring}` : ''}`
-    this.setState({page: path, query})
+    const path =
+      pathStr == null ? this.hashParse(window.location.hash).path : pathStr;
+
+    window.location.hash = `${path}${
+      querystring.length > 0 ? `?${querystring}` : ''
+    }`;
+
+    this.updateNavState(path, query);
+  };
+
+  updateNavState = (pathStr, queryObj) => {
+    this.setState({
+      page: pathStr,
+      params: {
+        ssp: queryObj.ssp,
+        rcp: queryObj.rcp,
+        dmg: queryObj.dmg,
+        discounting: queryObj.discounting,
+      },
+    });
   }
 
   componentDidMount() {
     const {path, query} = this.hashParse(window.location.hash);
     window.addEventListener('hashchange', this.handleHashChange);
     if (path === '') {
-      window.location.hash = this.state.page;
+      this.nav(this.state.page, {...this.state.params, ...query});
+    } else {
+      this.updateNavState(path, query);
     }
+
   }
 
   render() {
@@ -79,13 +111,13 @@ class App extends Component {
         <div className="top-nav">
           <button
             className={page === '/winners' ? 'activeNavButton' : undefined}
-            onClick={/*() => this.setState({page: '/winners'})*/() => this.nav('/winners')}
+            onClick={() => this.nav('/winners')}
           >
             ‘Winners’ &amp; ‘Losers’ among G20 nations.
           </button>
           <button
             className={page === '/cscc' ? 'activeNavButton' : undefined}
-            onClick={/*() => this.setState({page: '/cscc'})*/() => this.nav('/cscc')}
+            onClick={() => this.nav('/cscc')}
           >
             Country-level social cost of carbon
           </button>
@@ -93,7 +125,13 @@ class App extends Component {
 
         {page === '/winners' && (
           <div>
-            <ParameterPicker>
+            <ParameterPicker
+              onChange={({state}) => {
+                console.log(state);
+                this.nav(null, state);
+              }}
+              params={this.state.params}
+            >
               {({state}) => (
                 <React.Fragment>
                   <div

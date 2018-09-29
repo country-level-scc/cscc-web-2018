@@ -1,34 +1,35 @@
 // @flow
 
-import * as React from "react";
-import { SSPS, DMGS, RCPS } from "./constants";
-
-type ParamState = {
-  ssp: string,
-  rcp: string,
-  dmg: string,
-  discounting: () => any
-};
+import * as React from 'react';
+import {SSPS, DMGS, RCPS} from './constants';
 
 type ParamProps = {
   children: ({state: ParamState}) => React.Node,
+  onChange: ({state: ParamState}) => any,
+  params: {
+    ssp: string,
+    rcp: string,
+    dmg: string,
+    discounting: string,
+  },
 };
 
-export default class ParameterPicker extends React.Component<
-  ParamProps,
-  ParamState
-> {
-  state = {
-    ssp: "SSP2",
-    rcp: "rcp60",
-    dmg: "bhm_sr",
-    discounting: 'growth adjusted',
+export default class ParameterPicker extends React.Component<ParamProps> {
+  static defaultProps = {
+    params: {
+      ssp: 'SSP2',
+      rcp: 'rcp60',
+      dmg: 'bhm_sr',
+      discounting: 'growth adjusted',
+    },
+    callback: () => {},
   };
 
-  static defaultProps = { callback: () => {} };
-
   update = evt => {
-    this.setState({ [evt.currentTarget.name]: evt.currentTarget.value });
+    this.props.onChange({state: {
+      ...this.props.params,
+      [evt.currentTarget.name]: evt.currentTarget.value,
+    }});
   };
 
   render() {
@@ -36,21 +37,33 @@ export default class ParameterPicker extends React.Component<
       <div>
         <div className="param-picker">
           <div className="param-picker-row">
-            <select name="ssp" value={this.state.ssp} onChange={this.update}>
+            <select
+              name="ssp"
+              value={this.props.params.ssp}
+              onChange={this.update}
+            >
               {SSPS.map(ssp => (
                 <option key={ssp.value} value={ssp.value}>
                   {ssp.label}
                 </option>
               ))}
             </select>
-            <select name="rcp" value={this.state.rcp} onChange={this.update}>
+            <select
+              name="rcp"
+              value={this.props.params.rcp}
+              onChange={this.update}
+            >
               {RCPS.map(ssp => (
                 <option key={ssp.value} value={ssp.value}>
                   {ssp.label}
                 </option>
               ))}
             </select>
-            <select name="dmg" value={this.state.dmg} onChange={this.update}>
+            <select
+              name="dmg"
+              value={this.props.params.dmg}
+              onChange={this.update}
+            >
               {DMGS.map(ssp => (
                 <option key={ssp.value} value={ssp.value}>
                   {ssp.label}
@@ -58,10 +71,11 @@ export default class ParameterPicker extends React.Component<
               ))}
             </select>
             <select
-              name="discounting" value={this.state.discounting}
+              name="discounting"
+              value={this.props.params.discounting}
               onChange={this.update}
             >
-              {["fixed", "growth adjusted"].map(d => (
+              {['fixed', 'growth adjusted'].map(d => (
                 <option key={d} value={d}>
                   {d}
                 </option>
@@ -76,21 +90,22 @@ export default class ParameterPicker extends React.Component<
             <div>
               Emissions Scenario<br />
               Representative Concentration Pathway (RCPs)
-
             </div>
+            <div>Damage Model</div>
             <div>
-              Damage Model
+              Discounting Scheme<br />{' '}
+              {this.props.params.discounting === 'fixed' && (
+                <React.Fragment>
+                  Pure rate of time preference of 2% per year and an 206
+                  inter-temporal elasticity of substitution of 1.5
+                </React.Fragment>
+              )}
             </div>
-            <div>
-              Discounting Scheme<br /> {this.state.discounting === 'fixed' && <React.Fragment>Pure rate of time preference of 2% per year and an
-206 inter-temporal elasticity of substitution of 1.5</React.Fragment>}
-            </div>
-
           </div>
         </div>
         {this.props.children &&
           this.props.children({
-            state: this.state
+            state: this.props.params,
           })}
       </div>
     );
