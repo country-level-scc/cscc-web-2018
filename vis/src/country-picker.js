@@ -4,8 +4,10 @@ import matchSorter from 'match-sorter';
 import clamp from 'lodash/clamp';
 
 export class CountryNamePicker extends React.Component<> {
-  state = {
+  static defaultProps = {
     country: 'WLD',
+  }
+  state = {
     inputValue: '',
     focused: -2,
   };
@@ -15,10 +17,20 @@ export class CountryNamePicker extends React.Component<> {
       const possibleRow = countries.find(row => row.id === this.props.country);
       if (possibleRow) {
         this.setState({
-          country: possibleRow.id,
+          // country: possibleRow.id,
           inputValue: possibleRow.label,
         })
       }
+    }
+  }
+
+  componentDidMount() {
+    const {country} = this.props;
+    const possibleRow = countries.find(row => row.id === country);
+    if (possibleRow) {
+      this.setState({
+        inputValue: possibleRow.label,
+      })
     }
   }
 
@@ -121,7 +133,7 @@ export class CountryNamePicker extends React.Component<> {
       case 'Enter':
         this.setState({
           inputValue: countryList[focusClamp(this.state.focused)].label,
-          country: countryList[focusClamp(this.state.focused)].id,
+          // country: countryList[focusClamp(this.state.focused)].id,
           focused: 0,
           dropdownOpen: false,
         });

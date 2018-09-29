@@ -147,7 +147,7 @@ class App extends Component {
                       ref={el => (this.bigFig4 = el)}
                       iso3={this.state.iso3}
                       onChange={({countryData}) => {
-                        console.log({countryData})
+                        console.log({countryData});
                         this.state.iso3 &&
                           this.setState({fig4Data: countryData});
                       }}
@@ -312,9 +312,10 @@ class App extends Component {
             />
             <Fig1Options
               country={this.state.iso3}
-              onCountryChange={selectedCountry =>
-                this.setState({selectedCountry})
-              }
+              onCountryChange={selectedCountry => {
+                this.setState({selectedCountry});
+                this.nav(null, {iso3: selectedCountry});
+              }}
               width={800}
               height={540}
               paddingY={20}

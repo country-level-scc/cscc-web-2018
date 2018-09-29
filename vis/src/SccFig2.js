@@ -26,9 +26,9 @@ type Props = {
 
 class Figure2 extends React.Component<Props> {
   componentDidUpdate(prevProps) {
-    if (prevProps.country !== this.props.country) {
-      const country = worldMap.find(country => country.properties.id ===this.props.country)
-      const countryRow = this.props.data.find(row => row.ISO3 === this.props.country);
+    const country = worldMap.find(country => country.properties.id ===this.props.country)
+    const countryRow = this.props.data.find(row => row.ISO3 === this.props.country);
+    if (prevProps.data !== this.props.data || prevProps.country !== this.props.country) {
       if (country && countryRow) {
         const {label} = country.properties;
         this.props.onCountryEnter(label, countryRow)
