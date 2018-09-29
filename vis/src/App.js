@@ -88,8 +88,9 @@ class App extends Component {
         dmg: queryObj.dmg,
         discounting: queryObj.discounting,
       },
+      iso3: queryObj.iso3,
     });
-  }
+  };
 
   componentDidMount() {
     const {path, query} = this.hashParse(window.location.hash);
@@ -99,7 +100,6 @@ class App extends Component {
     } else {
       this.updateNavState(path, query);
     }
-
   }
 
   render() {
@@ -127,7 +127,6 @@ class App extends Component {
           <div>
             <ParameterPicker
               onChange={({state}) => {
-                console.log(state);
                 this.nav(null, state);
               }}
               params={this.state.params}
@@ -143,7 +142,16 @@ class App extends Component {
                       marginBottom: 40,
                     }}
                   >
-                    <Fig4DataLoader {...state} ref={el => (this.bigFig4 = el)}>
+                    <Fig4DataLoader
+                      {...state}
+                      ref={el => (this.bigFig4 = el)}
+                      iso3={this.state.iso3}
+                      onChange={({countryData}) => {
+                        console.log({countryData})
+                        this.state.iso3 &&
+                          this.setState({fig4Data: countryData});
+                      }}
+                    >
                       {({data}) => (
                         <React.Fragment>
                           <CsccFig4
@@ -290,15 +298,20 @@ class App extends Component {
         {page === '/cscc' && (
           <React.Fragment>
             <Fig2Options
-              country={this.state.selectedCountry}
-              onCountrySelect={selectedCountry =>
-                this.setState({
-                  selectedCountry,
-                })
-              }
+              country={this.state.iso3}
+              onCountrySelect={iso3 => {
+                // this.setState({
+                //                 iso3,
+                //               });
+                this.nav(null, {iso3: iso3});
+              }}
+              params={this.state.params}
+              onParamChange={({state}) => {
+                this.nav(null, state);
+              }}
             />
             <Fig1Options
-              country={this.state.selectedCountry}
+              country={this.state.iso3}
               onCountryChange={selectedCountry =>
                 this.setState({selectedCountry})
               }

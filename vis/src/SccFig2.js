@@ -137,6 +137,7 @@ const Fig2Legend = ({bins, labels, size = 15, x, y}) => {
 type ParamProps = {
   onCountrySelect: (iso3: string) => any,
   country?: string, // an iso3 country
+  params: *,
 };
 type ParamState = {
   ssp: 'SSP1' | 'SSP2' | 'SSP3' | 'SSP4' | 'SSP5',
@@ -177,7 +178,7 @@ export class Fig2Options extends React.Component<ParamProps, ParamState> {
 
     return (
       <div className="f2">
-        <ParameterPicker>
+        <ParameterPicker params={this.props.params} onChange={this.props.onParamChange}>
           {({state: {rcp, ssp, dmg, discounting}}) => (
             <CSVLoader
               csvPath={`${

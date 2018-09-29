@@ -189,6 +189,14 @@ export class Fig4DataLoader extends React.PureComponent<*, *> {
     return this.dataToRender(this.state.csccData, this.state.wbData);
   };
 
+  dataForIso3 = (iso3 = '') => iso3.trim() ? this.getData().find(row => row.ISO3 === iso3) : undefined;
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.csccData !== prevState.csccData || this.state.wbData !== prevState.wbData) {
+      this.props.onChange && this.props.onChange({data: this.getData(), countryData: this.dataForIso3(this.props.iso3)});
+    }
+  }
+
   render() {
     const {dmg, rcp, ssp} = this.props;
     const csvPath = `rcp_${rcp}_dmg_${dmg}_ssp_${ssp}.csv`;
