@@ -156,8 +156,12 @@ class App extends Component {
                         <React.Fragment>
                           <CsccFig4
                             data={data}
-                            onCountrySelect={fig4Data =>
-                              this.setState({fig4Data})
+                            onCountrySelect={
+                              fig4Data => {
+                                this.nav(null, {iso3: fig4Data.ISO3});
+                                this.setState({fig4Data});
+                              }
+                              // this.setState({fig4Data})
                             }
                           />
                           <div style={{marginRight: 40}} />
@@ -170,9 +174,10 @@ class App extends Component {
                             domainY={[-2.5, 6.2]}
                             clip={true}
                             data={data}
-                            onCountrySelect={fig4Data =>
-                              this.setState({fig4Data})
-                            }
+                            onCountrySelect={fig4Data => {
+                              this.nav(null, {iso3: fig4Data.ISO3});
+                              this.setState({fig4Data});
+                            }}
                           />
                           <div style={{display: 'flex', flexFlow: 'column'}}>
                             <Fig4Legend />
