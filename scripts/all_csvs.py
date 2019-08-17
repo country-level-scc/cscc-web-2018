@@ -72,4 +72,4 @@ if __name__ == '__main__':
     extract_country_csvs(dataset, args.dest)
 
   else:
-    print 'call\n  python extract_country.py USA cscc_v1.csv'
+    print 'call\n  python all_csvs.py ../cscc_v2.csv'
