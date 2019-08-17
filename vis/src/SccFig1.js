@@ -115,7 +115,7 @@ class SCCFigure extends React.Component<Fig1Props> {
     height: 300,
   };
   render() {
-    const {country, data, clamp, width, height, paddingY = 35} = this.props;
+    const {country, data, clamp, width, height, paddingY = 25} = this.props;
     const {min, max} = minMax(data);
     const inferred = inferredClamp(data);
     const maxActual = clamp !== undefined ? clamp : Math.min(inferred, max);
@@ -126,7 +126,7 @@ class SCCFigure extends React.Component<Fig1Props> {
       .domain([min, maxActual])
       .range([10, width - paddingLeft - 5]);
 
-    const rowHeight = (height - (SSPS.length - 1) * paddingY) / SSPS.length;
+    const rowHeight = (height - (SSPS.length - 1) * (paddingY + 2)) / SSPS.length;
     const rowOffest = rowHeight + paddingY;
 
     return (
@@ -250,7 +250,7 @@ class DamageFigure extends React.Component<Props> {
       'bhm_richpoor_sr',
       'bhm_lr',
       'bhm_richpoor_lr',
-      'djo',
+      'djo_richpoor',
     ];
 
     const dmg_height = height / damage_functions.length;
@@ -280,11 +280,12 @@ class DamageFigure extends React.Component<Props> {
                 />
 
                 {x1 - x2 !== 0 && (
-                  <circle
+                  <DamageIcon
                     cx={value.median || 0}
                     cy={idx * dmg_height}
-                    r={1}
+                    r={2.5}
                     className={fn}
+                    damageFunction={fn}
                   />
                 )}
               </React.Fragment>
@@ -294,6 +295,30 @@ class DamageFigure extends React.Component<Props> {
       );
     });
   }
+}
+
+const DamageIcon = ({cx, cy, r, className, damageFunction}) => {
+
+  const figClassName = `fig1-${damageFunction} ${className}`;
+  switch(damageFunction){
+    case 'bhm_sr':
+      return <circle cx={cx} cy={cy} r={r} fill="none" strokeWidth={1} className={figClassName} />
+    case 'bhm_richpoor_sr':
+      return <circle cx={cx} cy={cy} r={r} className={figClassName} />
+    case 'bhm_lr':
+      return <rect x={cx-r} y={cy-r} width={r*2} height={r*2} strokeWidth={1} fill="none" className={figClassName} />
+    case 'bhm_richpoor_lr':
+      return <rect x={cx-r} y={cy-r} width={r*2} height={r*2} className={figClassName} />
+    case 'djo_richpoor':
+      const triangleScale = 1.25;
+      const x1 = cx-(r*triangleScale);
+      const y1 = cy+(r*triangleScale);
+      const x2 = x1+(2*triangleScale*r);
+      const x3 = x1+(triangleScale*r);
+      const y2 = y1 - (2*triangleScale*r);
+      return <path d={`M ${x1},${y1} L${x2},${y1} L${x3},${y2} `} className={figClassName} />
+  }
+  return null
 }
 
 type F1Props = {

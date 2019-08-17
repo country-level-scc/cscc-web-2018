@@ -87,17 +87,44 @@ h1 {
 .SSP1 {
   stroke: rgb(230, 50, 19);
 }
+.SSP1 .fig1-bhm_richpoor_sr,
+.SSP1 .fig1-bhm_richpoor_lr,
+.SSP1 .fig1-djo_richpoor {
+  fill: rgb(230, 50, 19);
+}
+
 .SSP2 {
   stroke: rgb(0, 127, 185);
 }
+.SSP2 .fig1-bhm_richpoor_sr,
+.SSP2 .fig1-bhm_richpoor_lr,
+.SSP2 .fig1-djo_richpoor {
+  fill: rgb(0, 127, 185);
+}
+
 .SSP3 {
   stroke: rgb(13, 163, 71);
+}
+.SSP3 .fig1-bhm_richpoor_sr,
+.SSP3 .fig1-bhm_richpoor_lr,
+.SSP3 .fig1-djo_richpoor {
+  fill: rgb(13, 163, 71);
 }
 .SSP4 {
   stroke: rgb(132, 11, 189);
 }
+.SSP4 .fig1-bhm_richpoor_sr,
+.SSP4 .fig1-bhm_richpoor_lr,
+.SSP4 .fig1-djo_richpoor {
+  fill: rgb(132, 11, 189);
+}
 .SSP5 {
   stroke: rgb(204, 100, 4);
+}
+.SSP5 .fig1-bhm_richpoor_sr,
+.SSP5 .fig1-bhm_richpoor_lr,
+.SSP5 .fig1-djo_richpoor {
+  fill: rgb(204, 100, 4);
 }
 
 .SSP1.rcp60,
@@ -256,3 +283,4 @@ h1 {
   top: 275px;
   left: 100px;
 }
+
