@@ -305,9 +305,6 @@ class App extends Component {
             <Fig2Options
               country={this.state.iso3}
               onCountrySelect={iso3 => {
-                // this.setState({
-                //                 iso3,
-                //               });
                 this.nav(null, {iso3: iso3});
               }}
               params={this.state.params}
@@ -317,6 +314,7 @@ class App extends Component {
             />
             <Fig1Options
               country={this.state.iso3}
+              params={this.state.params}
               onCountryChange={selectedCountry => {
                 this.setState({selectedCountry});
                 this.nav(null, {iso3: selectedCountry});
